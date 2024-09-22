@@ -1,0 +1,17 @@
+{
+	"title": "SELECT fail, audit WHERE NOT dept IS *",
+	"input": {
+		"WHERE": {
+			"NOT": {
+				"IS": {
+					"sections_dept": "*"
+				}
+			}
+		},
+		"OPTIONS": {
+			"COLUMNS": ["sections_fail", "sections_audit"]
+		}
+	},
+	"errorExpected": false,
+	"expected": []
+}

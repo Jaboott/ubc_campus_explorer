@@ -1,0 +1,19 @@
+{
+	"title": "Query that uses all caps idstring",
+	"input": {
+		"WHERE": {
+			"GT": {
+				"SECTIONS_avg": 97
+			}
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"SECTIONS_avg",
+				"SECTIONS_dept"
+			],
+			"ORDER": "SECTIONS_avg"
+		}
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}

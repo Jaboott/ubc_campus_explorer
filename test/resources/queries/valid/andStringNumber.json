@@ -1,0 +1,29 @@
+{
+	"title": "SELECT instructor, title WHERE dept IS *or AND year = 1900",
+	"input": {
+		"WHERE": {
+			"AND": [
+				{
+					"IS": {
+						"sections_dept": "*or"
+					}
+				},
+				{
+					"EQ": {
+						"sections_year": 1900
+					}
+				}
+			]
+		},
+		"OPTIONS": {
+			"COLUMNS": ["sections_instructor", "sections_title"],
+			"ORDER": "sections_instructor"
+		}
+	},
+	"errorExpected": false,
+	"expected": [
+		{ "sections_instructor": "", "sections_title": "ecolgcl restortn" },
+		{ "sections_instructor": "", "sections_title": "urbn frst welbng" },
+		{ "sections_instructor": "", "sections_title": "green the city" }
+	]
+}

@@ -1,0 +1,15 @@
+{
+	"title": "Query with an invalid key in OPTIONS (LT inside OPTIONS)",
+	"input": {
+		"WHERE": {},
+		"OPTIONS": {
+			"LT": {
+				"sections_avg": 97
+			},
+			"COLUMNS": ["sections_dept", "sections_avg"],
+			"ORDER": "sections_avg"
+		}
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}

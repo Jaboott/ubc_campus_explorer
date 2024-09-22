@@ -1,0 +1,55 @@
+{
+	"title": "SELECT instructor, fail WHERE avg > 98 AND NOT instructor IS f*",
+	"input": {
+		"WHERE": {
+			"AND": [
+				{
+					"GT": {
+						"sections_avg": 98
+					}
+				},
+				{
+					"NOT": {
+						"IS": {
+							"sections_instructor": "f*"
+						}
+					}
+				}
+			]
+		},
+		"OPTIONS": {
+			"COLUMNS": ["sections_instructor", "sections_fail"],
+			"ORDER": "sections_fail"
+		}
+	},
+	"errorExpected": false,
+	"expected": [
+		{ "sections_instructor": "", "sections_fail": 0 },
+		{ "sections_instructor": "", "sections_fail": 0 },
+		{ "sections_instructor": "", "sections_fail": 0 },
+		{ "sections_instructor": "", "sections_fail": 0 },
+		{
+			"sections_instructor": "burrows, marlene;harding, jillian;krist, jennifer;mccuaig, fairleth",
+			"sections_fail": 0
+		},
+		{ "sections_instructor": "", "sections_fail": 0 },
+		{ "sections_instructor": "krist, jennifer", "sections_fail": 0 },
+		{ "sections_instructor": "", "sections_fail": 0 },
+		{ "sections_instructor": "brew, nancy", "sections_fail": 0 },
+		{ "sections_instructor": "", "sections_fail": 0 },
+		{ "sections_instructor": "gomez, jose", "sections_fail": 0 },
+		{ "sections_instructor": "", "sections_fail": 0 },
+		{ "sections_instructor": "cannon, joanna", "sections_fail": 0 },
+		{ "sections_instructor": "", "sections_fail": 0 },
+		{ "sections_instructor": "grow, laura", "sections_fail": 0 },
+		{ "sections_instructor": "", "sections_fail": 0 },
+		{ "sections_instructor": "grow, laura", "sections_fail": 0 },
+		{ "sections_instructor": "grow, laura", "sections_fail": 0 },
+		{ "sections_instructor": "", "sections_fail": 0 },
+		{ "sections_instructor": "cole, kenneth", "sections_fail": 0 },
+		{ "sections_instructor": "cole, kenneth", "sections_fail": 0 },
+		{ "sections_instructor": "", "sections_fail": 0 },
+		{ "sections_instructor": "coria, lino", "sections_fail": 0 },
+		{ "sections_instructor": "cox, daniel", "sections_fail": 0 }
+	]
+}
