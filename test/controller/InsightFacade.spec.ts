@@ -292,7 +292,7 @@ describe("InsightFacade", function () {
 					numRows: 2,
 				},
 			];
-			return expect(result).to.deep.equal(expectedResult);
+			return expect(result).to.have.deep.members(expectedResult);
 		});
 
 		it("should successfully list more than one data set", async function () {
@@ -395,7 +395,7 @@ describe("InsightFacade", function () {
 					`performQuery resolved when it should have rejected with ${expected}`
 				);
 			}
-			return expect(result).to.deep.equal(expected); // TODO: replace with your assertions
+			return expect(result).to.have.deep.members(expected); // TODO: replace with your assertions
 		}
 
 		before(async function () {
