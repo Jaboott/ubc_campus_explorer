@@ -1,0 +1,18 @@
+{
+	"title": "Query that uses invalid mcomparator",
+	"input": {
+		"WHERE": {
+			"GTEQ": {
+				"sections_avg": 97
+			}
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"sections_avg"
+			],
+			"ORDER": "sections_avg"
+		}
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}

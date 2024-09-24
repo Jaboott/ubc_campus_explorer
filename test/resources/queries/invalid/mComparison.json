@@ -1,0 +1,15 @@
+{
+	"title": "Query that compare a skey using MCOMPARISON",
+	"input": {
+		"WHERE": {
+			"IS": {
+				"sections_avg": "*7"
+			}
+		},
+		"OPTIONS": {
+			"COLUMNS": ["sections_dept", "sections_avg"]
+		}
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}

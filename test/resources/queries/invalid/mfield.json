@@ -1,0 +1,19 @@
+{
+	"title": "Query that references an invalid mfield",
+	"input": {
+		"WHERE": {
+			"GT": {
+				"sections_avg": 97
+			}
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"sections_dept",
+				"sections_average"
+			],
+			"ORDER": "sections_average"
+		}
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}

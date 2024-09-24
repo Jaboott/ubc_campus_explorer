@@ -1,0 +1,15 @@
+{
+	"title": "Query that compare a mkey using SCOMPARISON",
+	"input": {
+		"WHERE": {
+			"GT": {
+				"sections_dept": "*a"
+			}
+		},
+		"OPTIONS": {
+			"COLUMNS": ["sections_dept", "sections_avg"]
+		}
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}
