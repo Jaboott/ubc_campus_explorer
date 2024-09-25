@@ -32,7 +32,7 @@ export default class InsightFacade implements IInsightFacade {
 
 		idValidator(id);
 		const courses = await readContent(content);
-		console.log(courses); // remove later
+		console.log(courses.name); // remove later
 
 		return Promise.resolve([""]); // TODO
 	}

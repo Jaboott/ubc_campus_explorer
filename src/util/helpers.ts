@@ -21,9 +21,11 @@ export async function readContent(content: string): Promise<any> {
 	let zipFile;
 	try {
 		zipFile = await zip.loadAsync(content, { base64: true });
-	} catch (err) {
-		console.log(err); // remove later
-		throw new InsightError("not a base64 string");
+	} catch (err: unknown) {
+		if (err instanceof Error) {
+			throw new InsightError(`${err.message}`);
+		}
+		throw new InsightError("Something happened in readContent");
 	}
 
 	const validStructure = zipFile.folder("courses");
