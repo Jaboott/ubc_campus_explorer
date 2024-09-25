@@ -63,22 +63,22 @@ describe("InsightFacade", function () {
 			return expect(resultTwo).to.have.deep.members(["ubc", "test123"]);
 		});
 
-		it("should reject with an empty dataset id", function () {
+		it.only("should reject with an empty dataset id", function () {
 			const result = facade.addDataset("", sectionOne, InsightDatasetKind.Sections);
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
 
-		it("should reject with an id containing underscore", function () {
+		it.only("should reject with an id containing underscore", function () {
 			const result = facade.addDataset("test_", sectionOne, InsightDatasetKind.Sections);
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
 
-		it("should reject with an id that contains whitespace only", function () {
+		it.only("should reject with an id that contains whitespace only", function () {
 			const result = facade.addDataset(" ", sectionOne, InsightDatasetKind.Sections);
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
 
-		it("should reject with an id that is the same as the id of an already added dataset", async function () {
+		it.only("should reject with an id that is the same as the id of an already added dataset", async function () {
 			try {
 				await facade.addDataset("test123", sectionOne, InsightDatasetKind.Sections);
 				await facade.addDataset("test123", sectionOne, InsightDatasetKind.Sections);
@@ -88,42 +88,42 @@ describe("InsightFacade", function () {
 			}
 		});
 
-		it("should reject with an content that is not base64 string", function () {
+		it.only("should reject with an content that is not base64 string", function () {
 			const invalidContent = "@@@";
 			const result = facade.addDataset("test123", invalidContent, InsightDatasetKind.Sections);
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
 
-		it("should reject without content", function () {
+		it.only("should reject without content", function () {
 			const result = facade.addDataset("test123", "", InsightDatasetKind.Sections);
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
 
-		it("should reject when dataset is not in zip file", async function () {
+		it.only("should reject when dataset is not in zip file", async function () {
 			const invalidFileFormat = await getContentFromArchives("course.txt");
 			const result = facade.addDataset("test123", invalidFileFormat, InsightDatasetKind.Sections);
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
 
-		it("should reject when dataset is not located within a folder called courses/ in the zip's root directory. ", async function () {
+		it.only("should reject when dataset is not located within a folder called courses/ in the zip's root directory. ", async function () {
 			const invalidFileFormat = await getContentFromArchives("AANB504.zip");
 			const result = facade.addDataset("test123", invalidFileFormat, InsightDatasetKind.Sections);
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
 
-		it("should reject when the zip file is empty", async function () {
+		it.only("should reject when the zip file is empty", async function () {
 			const emptyFile = await getContentFromArchives("emptyFile.zip");
 			const result = facade.addDataset("test123", emptyFile, InsightDatasetKind.Sections);
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
 
-		it("should reject when content does not have a valid section with result key", async function () {
+		it.only("should reject when content does not have a valid section with result key", async function () {
 			const emptySection = await getContentFromArchives("emptyResult.zip");
 			const result = facade.addDataset("test123", emptySection, InsightDatasetKind.Sections);
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
 
-		it("should reject when section does not contains every valid query keys", async function () {
+		it.only("should reject when section does not contains every valid query keys", async function () {
 			const missingQueryKey = await getContentFromArchives("missingQueryKey.zip");
 			const result = facade.addDataset("test123", missingQueryKey, InsightDatasetKind.Sections);
 			return expect(result).to.eventually.be.rejectedWith(InsightError);

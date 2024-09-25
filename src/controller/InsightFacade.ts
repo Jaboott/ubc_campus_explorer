@@ -1,4 +1,5 @@
-import { IInsightFacade, InsightDataset, InsightDatasetKind, InsightResult } from "./IInsightFacade";
+import { IInsightFacade, InsightDataset, InsightDatasetKind, InsightError, InsightResult } from "./IInsightFacade";
+import { idValidator, readContent } from "../util/helpers";
 
 /**
  * This is the main programmatic entry point for the project.
@@ -6,11 +7,34 @@ import { IInsightFacade, InsightDataset, InsightDatasetKind, InsightResult } fro
  *
  */
 export default class InsightFacade implements IInsightFacade {
+	private existingDataset: Set<string>; // Not sure if we need this but we could use this set to keep track of added dataset IDs to avoid adding duplicates / removing dataset that is not added
+
+	constructor() {
+		this.existingDataset = new Set();
+	}
+
 	public async addDataset(id: string, content: string, kind: InsightDatasetKind): Promise<string[]> {
 		// TODO: Remove this once you implement the methods!
-		throw new Error(
-			`InsightFacadeImpl::addDataset() is unimplemented! - id=${id}; content=${content?.length}; kind=${kind}`
-		);
+		// throw new Error(
+		// 	`InsightFacadeImpl::addDataset() is unimplemented! - id=${id}; content=${content?.length}; kind=${kind}`
+		// );
+
+		if (!id || !content || !kind) {
+			throw new InsightError("Param not set");
+		}
+		// try {
+		// 	idValidator(id);
+		// 	const courses = await readContent(content);
+		// 	console.log(courses); // remove later
+		// } catch (err) {
+		// 	throw err;
+		// }
+
+		idValidator(id);
+		const courses = await readContent(content);
+		console.log(courses); // remove later
+
+		return Promise.resolve([""]); // TODO
 	}
 
 	public async removeDataset(id: string): Promise<string> {
