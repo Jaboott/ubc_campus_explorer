@@ -4,7 +4,7 @@ import JSZip from "jszip";
 export function idValidator(id: string): boolean {
 	// should we make two versions of this for add and remove?
 	// whitespace only and contains underscore?
-    // chatgpt generated regex expression 
+	// chatgpt generated regex expression
 	const regex = new RegExp("^(?!\\s*$)(?!.*_).+$");
 
 	if (!regex.test(id)) {
