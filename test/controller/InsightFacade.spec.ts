@@ -143,13 +143,13 @@ describe("InsightFacade", function () {
 			await clearDisk();
 		});
 
-		it("should successfully remove a dataset", async function () {
+		it.only("should successfully remove a dataset", async function () {
 			await facade.addDataset("test123", sectionOne, InsightDatasetKind.Sections);
 			const result = facade.removeDataset("test123");
 			return expect(result).to.eventually.equal("test123");
 		});
 
-		it("should successfully remove multiple dataset", async function () {
+		it.only("should successfully remove multiple dataset", async function () {
 			await facade.addDataset("test123", sectionOne, InsightDatasetKind.Sections);
 			await facade.addDataset("ubc", sectionOne, InsightDatasetKind.Sections);
 			await facade.removeDataset("ubc");
@@ -157,27 +157,27 @@ describe("InsightFacade", function () {
 			return expect(result).to.eventually.equal("test123");
 		});
 
-		it("should reject when empty dataset id", function () {
+		it.only("should reject when empty dataset id", function () {
 			const result = facade.removeDataset("");
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
 
-		it("should reject when id contains underscore", function () {
+		it.only("should reject when id contains underscore", function () {
 			const result = facade.removeDataset("test_");
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
 
-		it("should reject when id contains whitespace only", function () {
+		it.only("should reject when id contains whitespace only", function () {
 			const result = facade.removeDataset(" ");
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
 
-		it("should reject when trying to remove a data that is not added", function () {
+		it.only("should reject when trying to remove a data that is not added", function () {
 			const result = facade.removeDataset("test123");
 			return expect(result).to.eventually.be.rejectedWith(NotFoundError);
 		});
 
-		it("should reject when trying to remove the same dataset twice", async function () {
+		it.only("should reject when trying to remove the same dataset twice", async function () {
 			await facade.addDataset("test123", sectionOne, InsightDatasetKind.Sections);
 			await facade.removeDataset("test123");
 			const result = facade.removeDataset("test123");

@@ -1,5 +1,13 @@
-import { IInsightFacade, InsightDataset, InsightDatasetKind, InsightError, InsightResult } from "./IInsightFacade";
+import {
+	IInsightFacade,
+	InsightDataset,
+	InsightDatasetKind,
+	InsightError,
+	InsightResult,
+	NotFoundError,
+} from "./IInsightFacade";
 import { idValidator, readContent } from "../util/helpers";
+const fs = require("fs-extra");
 
 /**
  * This is the main programmatic entry point for the project.
@@ -39,7 +47,21 @@ export default class InsightFacade implements IInsightFacade {
 
 	public async removeDataset(id: string): Promise<string> {
 		// TODO: Remove this once you implement the methods!
-		throw new Error(`InsightFacadeImpl::removeDataset() is unimplemented! - id=${id};`);
+		// throw new Error(`InsightFacadeImpl::removeDataset() is unimplemented! - id=${id};`);
+		const path = `data/${id}`;
+		idValidator(id);
+		const fileExists = await fs.pathExists(path);
+
+		if (!fileExists) {
+			throw new NotFoundError("ID does not exist");
+		}
+
+		try {
+			await fs.remove(path);
+			return id;
+		} catch (err) {
+			throw new InsightError(err instanceof Error ? err.message : String(err)); // chat gpt
+		}
 	}
 
 	public async performQuery(query: unknown): Promise<InsightResult[]> {
