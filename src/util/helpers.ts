@@ -16,10 +16,35 @@ export function idValidator(id: string): boolean {
 
 export async function readContent(content: string): Promise<any> {
 	let zipFile;
-
-	// Attempting to load the base 64 zip file
 	try {
+		// Attempting to load the base 64 zip file
 		zipFile = await JSZip.loadAsync(content, { base64: true });
+		// Using .files to check the existence of "courses/"
+		const validStructure = zipFile.files["courses/"];
+		if (!validStructure) {
+			throw new InsightError("not located within a folder called courses/ in the zip's root directory.");
+		}
+		const allPromises: Promise<any>[] = [];
+
+		for (const filename of Object.keys(zipFile.files)) {
+			if (filename.startsWith("courses/") && !zipFile.files[filename].dir) {
+				const promise = zipFile.files[filename].async("text").then((fileContent) => {
+					try {
+						const jsonData = JSON.parse(fileContent);
+						// console.log(jsonData);
+						// TODO check if it is a valid section
+						return jsonData;
+					} catch (e) {
+						throw new InsightError(`${e}`);
+					}
+				});
+				allPromises.push(promise);
+			}
+		}
+
+		// for now results contains the all json objects
+		const results = await Promise.all(allPromises);
+		return results;
 	} catch (err: unknown) {
 		let message = "Unknown Error";
 		// To access the .message field
@@ -28,13 +53,6 @@ export async function readContent(content: string): Promise<any> {
 		}
 		throw new InsightError(message);
 	}
-
-	// Using .files to check the existence of "courses/"
-	const validStructure = zipFile.files["courses/"];
-	if (!validStructure) {
-		throw new InsightError("not located within a folder called courses/ in the zip's root directory.");
-	}
-
 	// JSZip doesn't have a way to just return a folder, so we can only return the entire zip file
 	// after checking its validity
 	return zipFile;

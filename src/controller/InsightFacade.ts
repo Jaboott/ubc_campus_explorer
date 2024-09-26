@@ -22,11 +22,6 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public async addDataset(id: string, content: string, kind: InsightDatasetKind): Promise<string[]> {
-		// TODO: Remove this once you implement the methods!
-		// throw new Error(
-		// 	`InsightFacadeImpl::addDataset() is unimplemented! - id=${id}; content=${content?.length}; kind=${kind}`
-		// );
-
 		if (!id || !content || !kind) {
 			throw new InsightError("Param not set");
 		}
@@ -40,14 +35,12 @@ export default class InsightFacade implements IInsightFacade {
 
 		idValidator(id);
 		const courses = await readContent(content);
-		console.log(courses.name); // remove later
+		console.log(courses); // remove later
 
 		return Promise.resolve([""]); // TODO
 	}
 
 	public async removeDataset(id: string): Promise<string> {
-		// TODO: Remove this once you implement the methods!
-		// throw new Error(`InsightFacadeImpl::removeDataset() is unimplemented! - id=${id};`);
 		const path = `data/${id}`;
 		idValidator(id);
 		const fileExists = await fs.pathExists(path);
@@ -70,7 +63,14 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public async listDatasets(): Promise<InsightDataset[]> {
-		// TODO: Remove this once you implement the methods!
-		throw new Error(`InsightFacadeImpl::listDatasets is unimplemented!`);
+		const path = `data/`;
+		const result: InsightDataset[] = [];
+		const datasetAdded = await fs.pathExists(path);
+		if (!datasetAdded) {
+			return result;
+		}
+		// const getDatasetIds = await fs.readdir(path);
+		// TODO
+		return result;
 	}
 }

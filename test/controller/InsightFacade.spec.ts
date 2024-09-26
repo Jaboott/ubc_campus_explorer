@@ -63,22 +63,22 @@ describe("InsightFacade", function () {
 			return expect(resultTwo).to.have.deep.members(["ubc", "test123"]);
 		});
 
-		it.only("should reject with an empty dataset id", function () {
+		it("should reject with an empty dataset id", function () {
 			const result = facade.addDataset("", sectionOne, InsightDatasetKind.Sections);
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
 
-		it.only("should reject with an id containing underscore", function () {
+		it("should reject with an id containing underscore", function () {
 			const result = facade.addDataset("test_", sectionOne, InsightDatasetKind.Sections);
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
 
-		it.only("should reject with an id that contains whitespace only", function () {
+		it("should reject with an id that contains whitespace only", function () {
 			const result = facade.addDataset(" ", sectionOne, InsightDatasetKind.Sections);
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
 
-		it.only("should reject with an id that is the same as the id of an already added dataset", async function () {
+		it("should reject with an id that is the same as the id of an already added dataset", async function () {
 			try {
 				await facade.addDataset("test123", sectionOne, InsightDatasetKind.Sections);
 				await facade.addDataset("test123", sectionOne, InsightDatasetKind.Sections);
@@ -88,42 +88,42 @@ describe("InsightFacade", function () {
 			}
 		});
 
-		it.only("should reject with an content that is not base64 string", function () {
+		it("should reject with an content that is not base64 string", function () {
 			const invalidContent = "@@@";
 			const result = facade.addDataset("test123", invalidContent, InsightDatasetKind.Sections);
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
 
-		it.only("should reject without content", function () {
+		it("should reject without content", function () {
 			const result = facade.addDataset("test123", "", InsightDatasetKind.Sections);
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
 
-		it.only("should reject when dataset is not in zip file", async function () {
+		it("should reject when dataset is not in zip file", async function () {
 			const invalidFileFormat = await getContentFromArchives("course.txt");
 			const result = facade.addDataset("test123", invalidFileFormat, InsightDatasetKind.Sections);
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
 
-		it.only("should reject when dataset is not located within a folder called courses/ in the zip's root directory. ", async function () {
+		it("should reject when dataset is not located within a folder called courses/ in the zip's root directory. ", async function () {
 			const invalidFileFormat = await getContentFromArchives("AANB504.zip");
 			const result = facade.addDataset("test123", invalidFileFormat, InsightDatasetKind.Sections);
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
 
-		it.only("should reject when the zip file is empty", async function () {
+		it("should reject when the zip file is empty", async function () {
 			const emptyFile = await getContentFromArchives("emptyFile.zip");
 			const result = facade.addDataset("test123", emptyFile, InsightDatasetKind.Sections);
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
 
-		it.only("should reject when content does not have a valid section with result key", async function () {
+		it("should reject when content does not have a valid section with result key", async function () {
 			const emptySection = await getContentFromArchives("emptyResult.zip");
 			const result = facade.addDataset("test123", emptySection, InsightDatasetKind.Sections);
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
 
-		it.only("should reject when section does not contains every valid query keys", async function () {
+		it("should reject when section does not contains every valid query keys", async function () {
 			const missingQueryKey = await getContentFromArchives("missingQueryKey.zip");
 			const result = facade.addDataset("test123", missingQueryKey, InsightDatasetKind.Sections);
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
@@ -143,13 +143,13 @@ describe("InsightFacade", function () {
 			await clearDisk();
 		});
 
-		it.only("should successfully remove a dataset", async function () {
+		it("should successfully remove a dataset", async function () {
 			await facade.addDataset("test123", sectionOne, InsightDatasetKind.Sections);
 			const result = facade.removeDataset("test123");
 			return expect(result).to.eventually.equal("test123");
 		});
 
-		it.only("should successfully remove multiple dataset", async function () {
+		it("should successfully remove multiple dataset", async function () {
 			await facade.addDataset("test123", sectionOne, InsightDatasetKind.Sections);
 			await facade.addDataset("ubc", sectionOne, InsightDatasetKind.Sections);
 			await facade.removeDataset("ubc");
@@ -157,27 +157,27 @@ describe("InsightFacade", function () {
 			return expect(result).to.eventually.equal("test123");
 		});
 
-		it.only("should reject when empty dataset id", function () {
+		it("should reject when empty dataset id", function () {
 			const result = facade.removeDataset("");
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
 
-		it.only("should reject when id contains underscore", function () {
+		it("should reject when id contains underscore", function () {
 			const result = facade.removeDataset("test_");
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
 
-		it.only("should reject when id contains whitespace only", function () {
+		it("should reject when id contains whitespace only", function () {
 			const result = facade.removeDataset(" ");
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
 
-		it.only("should reject when trying to remove a data that is not added", function () {
+		it("should reject when trying to remove a data that is not added", function () {
 			const result = facade.removeDataset("test123");
 			return expect(result).to.eventually.be.rejectedWith(NotFoundError);
 		});
 
-		it.only("should reject when trying to remove the same dataset twice", async function () {
+		it("should reject when trying to remove the same dataset twice", async function () {
 			await facade.addDataset("test123", sectionOne, InsightDatasetKind.Sections);
 			await facade.removeDataset("test123");
 			const result = facade.removeDataset("test123");
