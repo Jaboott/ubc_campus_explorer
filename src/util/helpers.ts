@@ -16,35 +16,16 @@ export function idValidator(id: string): boolean {
 
 export async function readContent(content: string): Promise<any> {
 	let zipFile;
+
 	try {
 		// Attempting to load the base 64 zip file
 		zipFile = await JSZip.loadAsync(content, { base64: true });
 		// Using .files to check the existence of "courses/"
 		const validStructure = zipFile.files["courses/"];
+
 		if (!validStructure) {
 			throw new InsightError("not located within a folder called courses/ in the zip's root directory.");
 		}
-		const allPromises: Promise<any>[] = [];
-
-		for (const filename of Object.keys(zipFile.files)) {
-			if (filename.startsWith("courses/") && !zipFile.files[filename].dir) {
-				const promise = zipFile.files[filename].async("text").then((fileContent) => {
-					try {
-						const jsonData = JSON.parse(fileContent);
-						// console.log(jsonData);
-						// TODO check if it is a valid section
-						return jsonData;
-					} catch (e) {
-						throw new InsightError(`${e}`);
-					}
-				});
-				allPromises.push(promise);
-			}
-		}
-
-		// for now results contains the all json objects
-		const results = await Promise.all(allPromises);
-		return results;
 	} catch (err: unknown) {
 		let message = "Unknown Error";
 		// To access the .message field
@@ -53,13 +34,45 @@ export async function readContent(content: string): Promise<any> {
 		}
 		throw new InsightError(message);
 	}
-	// JSZip doesn't have a way to just return a folder, so we can only return the entire zip file
-	// after checking its validity
-	return zipFile;
-	// iterate over the files (courses) and see if they are valid?
+	const allPromises: Promise<any>[] = [];
+
+	// Iterating through all the files under zip file
+	for (const filename of Object.keys(zipFile.files)) {
+		// Process file that follows the path "courses/" and is not a directory
+		if (filename.startsWith("courses/") && !zipFile.files[filename].dir) {
+			// Turn the file into text then check the validity of the section
+			const section = zipFile.files[filename].async("text").then((fileContent) => {
+				const sectionJson = JSON.parse(fileContent);
+				// Check if the jsonData is valid
+				if (sectionValidator(sectionJson)) {
+					return sectionJson.result;
+				} else {
+					return null;
+				}
+			});
+			allPromises.push(section);
+		}
+	}
+
+	// for now results contains the all json objects
+	const results = await Promise.all(allPromises);
+	return results;
 }
 
-// function sectionValidator(section: any): boolean {
-// 	// check if the section contains every valid query key?
-// 	return false; // TODO
-// }
+function sectionValidator(sections: any): boolean {
+	const sectionData = sections.result;
+	const requiredFields = ["id", "Course", "Title", "Professor", "Subject", "Year", "Avg", "Pass", "Fail", "Audit"];
+	// If "result" is not present, throw an error
+	if (!sectionData) {
+		return false;
+	}
+
+	// A file can include multiple section data
+	for (const section of sectionData) {
+		// Checks if all the fields are present in JSON
+		if (!requiredFields.every((field) => field in section)) {
+			return false;
+		}
+	}
+	return true;
+}
