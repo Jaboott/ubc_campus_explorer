@@ -2,7 +2,6 @@ import { InsightError } from "../controller/IInsightFacade";
 import JSZip from "jszip";
 
 export function idValidator(id: string): boolean {
-	// whitespace only and contains underscore?
 	// chatgpt generated regex expression
 	const regex = new RegExp("^(?!\\s*$)(?!.*_).+$");
 
@@ -16,23 +15,29 @@ export function idValidator(id: string): boolean {
 }
 
 export async function readContent(content: string): Promise<any> {
-	const zip = new JSZip();
 	let zipFile;
+
+	// Attempting to load the base 64 zip file
 	try {
-		zipFile = await zip.loadAsync(content, { base64: true });
+		zipFile = await JSZip.loadAsync(content, { base64: true });
 	} catch (err: unknown) {
+		let message = "Unknown Error";
+		// To access the .message field
 		if (err instanceof Error) {
-			throw new InsightError(`${err.message}`);
+			message = err.message;
 		}
-		throw new InsightError("Something happened in readContent");
+		throw new InsightError(message);
 	}
 
-	const validStructure = zipFile.folder("courses");
+	// Using .files to check the existence of "courses/"
+	const validStructure = zipFile.files["courses/"];
 	if (!validStructure) {
 		throw new InsightError("not located within a folder called courses/ in the zip's root directory.");
 	}
 
-	return validStructure;
+	// JSZip doesn't have a way to just return a folder, so we can only return the entire zip file
+	// after checking its validity
+	return zipFile;
 	// iterate over the files (courses) and see if they are valid?
 }
 

@@ -1,6 +1,6 @@
 export default class Section {
 	private readonly uuid: string; // section identifier
-	private readonly id: string; // course ID nummber
+	private readonly id: string; // course ID number
 	private readonly title: string;
 	private readonly instructor: string;
 	private readonly dept: string;
