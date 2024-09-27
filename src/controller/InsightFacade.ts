@@ -40,16 +40,22 @@ export default class InsightFacade implements IInsightFacade {
 		}
 		// path is "data/${id}"
 		const path = this.DATA_DIR + id + ".json";
+		const allObjects: any[] = [];
 		await fs.ensureDir(this.DATA_DIR);
 
 		for (const course of courses) {
 			if (!course) {
 				continue;
 			}
+			// convert course data to section instances and store them in an array
 			const sections = course.map((section: any) => Section.objectToInstance(section));
 			const sectionObj = sections.map((section: any) => section.instanceToObject());
-			fs.writeJSON(path, sectionObj);
+			allObjects.push(...sectionObj);
 		}
+
+		// write to disk after coverting all data
+		await fs.writeJSON(path, allObjects);
+		// keep track of the id added
 		this.existingDataset.add(id);
 		// convert set to array
 		return Array.from(this.existingDataset);
