@@ -16,11 +16,12 @@ const fs = require("fs-extra");
  *
  */
 export default class InsightFacade implements IInsightFacade {
-	private existingDataset: Set<string>;
+	// private existingDataset: Set<string>;
+	private existingDataset: InsightDataset[] = [];
 	private readonly DATA_DIR = "data/"; // change back to data
 
 	constructor() {
-		this.existingDataset = new Set();
+		// this.existingDataset = new Set();
 	}
 
 	public async addDataset(id: string, content: string, kind: InsightDatasetKind): Promise<string[]> {
@@ -28,7 +29,11 @@ export default class InsightFacade implements IInsightFacade {
 			throw new InsightError("Param not set");
 		}
 
-		if (this.existingDataset.has(id)) {
+		// if (this.existingDataset.has(id)) {
+		// 	throw new InsightError("Cannot add the same dataset twice");
+		// }
+
+		if (this.existingDataset.some((dataset) => dataset.id === id)) {
 			throw new InsightError("Cannot add the same dataset twice");
 		}
 
@@ -56,9 +61,18 @@ export default class InsightFacade implements IInsightFacade {
 		// write to disk after coverting all data
 		await fs.writeJSON(path, allObjects);
 		// keep track of the id added
-		this.existingDataset.add(id);
+
+		// this.existingDataset.push(id);
+		const newDataset: InsightDataset = {
+			id: id,
+			kind: kind,
+			numRows: allObjects.length, // change me
+		};
+		this.existingDataset.push(newDataset);
 		// convert set to array
-		return Array.from(this.existingDataset);
+		// return Array.from(this.existingDataset);
+		const idsSoFar = this.existingDataset.map((dataset) => dataset.id);
+		return idsSoFar;
 	}
 
 	public async removeDataset(id: string): Promise<string> {
@@ -70,13 +84,22 @@ export default class InsightFacade implements IInsightFacade {
 		// 	throw new NotFoundError(`${id} does not exist!`);
 		// }
 
-		if (!this.existingDataset.has(id)) {
-			throw new NotFoundError(`${id} does not exist!`);
+		// if (!this.existingDataset.has(id)) {
+		// 	throw new NotFoundError(`${id} does not exist!`);
+		// }
+
+		if (!this.existingDataset.some((dataset) => dataset.id === id)) {
+			throw new NotFoundError("Cannot add the same dataset twice");
 		}
 
 		try {
 			await fs.remove(path);
-			this.existingDataset.delete(id);
+			// this.existingDataset.delete(id);
+
+			//chatGPT -- remove a specific object based on having a specific ID
+			const index = this.existingDataset.findIndex((dataset) => dataset.id === id);
+			this.existingDataset.splice(index, 1);
+			//
 			return id;
 		} catch (err) {
 			throw new InsightError(err instanceof Error ? err.message : String(err)); // chat gpt
@@ -89,14 +112,14 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public async listDatasets(): Promise<InsightDataset[]> {
-		const result: InsightDataset[] = [];
-		const datasetAdded = await fs.pathExists(this.DATA_DIR);
-		if (!datasetAdded) {
-			return result;
-		}
+		// const result: InsightDataset[] = [];
+		// const datasetAdded = await fs.pathExists(this.DATA_DIR);
+		// if (!datasetAdded) {
+		// 	return result;
+		// }
 		// const getDatasetIds = await fs.readdir(this.DATA_DIR);
 		// console.log(getDatasetIds);
 		// TODO
-		return result;
+		return this.existingDataset;
 	}
 }
