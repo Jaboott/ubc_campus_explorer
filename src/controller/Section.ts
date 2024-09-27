@@ -33,4 +33,36 @@ export default class Section {
 		this.fail = fail;
 		this.audit = audit;
 	}
+
+	// can use this when saving instances onto disk
+	public instanceToObject(): object {
+		return {
+			uuid: this.uuid,
+			id: this.id,
+			title: this.title,
+			instructor: this.instructor,
+			dept: this.dept,
+			year: this.year,
+			avg: this.avg,
+			pass: this.pass,
+			fail: this.fail,
+			audit: this.audit,
+		};
+	}
+
+	// can use this when converting object to an instance when querying
+	public objectToInstance(obj: any): Section {
+		return new Section(
+			obj.uuid,
+			obj.id,
+			obj.title,
+			obj.instructor,
+			obj.dept,
+			obj.year,
+			obj.avg,
+			obj.pass,
+			obj.fail,
+			obj.audit
+		);
+	}
 }
