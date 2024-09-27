@@ -45,7 +45,7 @@ export default class InsightFacade implements IInsightFacade {
 		await fs.ensureDir(this.DATA_DIR);
 
 		for (const course of courses) {
-			// This should not be needed anymore, the handling null course logic is done in helpers
+			// To filter out the null
 			if (!course) {
 				continue;
 			}
@@ -53,6 +53,11 @@ export default class InsightFacade implements IInsightFacade {
 			const sections = course.map((section: any) => Section.objectToInstance(section));
 			const sectionObj = sections.map((section: any) => section.instanceToObject());
 			allObjects.push(...sectionObj);
+		}
+
+		// This is to catch when only a null dataset has been returned
+		if (allObjects.length === 0) {
+			throw new InsightError("No valid course found.");
 		}
 
 		// write to disk after coverting all data

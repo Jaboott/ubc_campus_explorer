@@ -15,6 +15,26 @@ export function idValidator(id: string): boolean {
 }
 
 export async function readContent(content: string): Promise<any[]> {
+	const zipFile = await fileValidator(content);
+	const allPromises: Promise<any>[] = [];
+
+	// Iterating through all the files under zip file
+	for (const filename of Object.keys(zipFile.files)) {
+		// Process file that follows the path "courses/" and is not a directory (+ not .DS_Store) - not sure if there is a better way to do this
+		if (filename.startsWith("courses/") && !zipFile.files[filename].dir && !filename.endsWith(".DS_Store")) {
+			// Turn the file into text then check the validity of the section
+			const section = zipFile.files[filename].async("text").then((fileContent) => {
+				return processFile(fileContent);
+			});
+			allPromises.push(section);
+		}
+	}
+	// wait for all file to process
+	// The returned list of sections contains null
+	return await Promise.all(allPromises);
+}
+
+async function fileValidator(content: string): Promise<JSZip> {
 	let zipFile;
 
 	try {
@@ -34,28 +54,8 @@ export async function readContent(content: string): Promise<any[]> {
 		}
 		throw new InsightError(message);
 	}
-	const allPromises: Promise<any>[] = [];
 
-	// Iterating through all the files under zip file
-	for (const filename of Object.keys(zipFile.files)) {
-		// Process file that follows the path "courses/" and is not a directory (+ not .DS_Store) - not sure if there is a better way to do this
-		if (filename.startsWith("courses/") && !zipFile.files[filename].dir && !filename.endsWith(".DS_Store")) {
-			// Turn the file into text then check the validity of the section
-			const section = zipFile.files[filename]
-				.async("text")
-				.then((fileContent) => {
-					return processFile(fileContent);
-				})
-				.then((result) => {
-					if (result !== null) {
-						return result;
-					}
-				});
-			allPromises.push(section);
-		}
-	}
-	// wait for all file to process
-	return await Promise.all(allPromises);
+	return zipFile;
 }
 
 function processFile(fileContent: any): any {
