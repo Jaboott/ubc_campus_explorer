@@ -42,10 +42,10 @@ export async function readContent(content: string): Promise<any> {
 		if (filename.startsWith("courses/") && !zipFile.files[filename].dir) {
 			// Turn the file into text then check the validity of the section
 			const section = zipFile.files[filename].async("text").then((fileContent) => {
-				const sectionJson = JSON.parse(fileContent);
+				const courseJson = JSON.parse(fileContent);
 				// Check if the jsonData is valid
-				if (sectionValidator(sectionJson)) {
-					return sectionJson.result;
+				if (courseValidator(courseJson)) {
+					return courseJson.result;
 				} else {
 					return null;
 				}
@@ -55,23 +55,19 @@ export async function readContent(content: string): Promise<any> {
 	}
 
 	// for now results contains the all json objects
-	const results = await Promise.all(allPromises);
-	if (results.length === 0) {
-		throw new InsightError("No valid course found.");
-	}
-	return results;
+	return await Promise.all(allPromises);
 }
 
-function sectionValidator(sections: any): boolean {
-	const sectionData = sections.result;
+function courseValidator(course: any): boolean {
+	const courseData = course.result;
 	const requiredFields = ["id", "Course", "Title", "Professor", "Subject", "Year", "Avg", "Pass", "Fail", "Audit"];
 	// If "result" is not present, throw an error
-	if (!sectionData) {
+	if (!courseData) {
 		return false;
 	}
 
 	// A file can include multiple section data
-	for (const section of sectionData) {
+	for (const section of courseData) {
 		// Checks if all the fields are present in JSON
 		if (!requiredFields.every((field) => field in section)) {
 			return false;

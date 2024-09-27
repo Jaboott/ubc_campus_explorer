@@ -51,18 +51,18 @@ export default class Section {
 	}
 
 	// can use this when converting object to an instance when querying
-	public objectToInstance(obj: any): Section {
+	public static objectToInstance(obj: any): Section {
 		return new Section(
-			obj.uuid,
 			obj.id,
-			obj.title,
-			obj.instructor,
-			obj.dept,
-			obj.year,
-			obj.avg,
-			obj.pass,
-			obj.fail,
-			obj.audit
+			obj.Course,
+			obj.Title,
+			obj.Professor,
+			obj.Subject,
+			obj.Avg,
+			obj.Year,
+			obj.Pass,
+			obj.Fail,
+			obj.Audit
 		);
 	}
 }

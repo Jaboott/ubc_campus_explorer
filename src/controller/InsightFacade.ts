@@ -17,7 +17,7 @@ const fs = require("fs-extra");
  */
 export default class InsightFacade implements IInsightFacade {
 	private existingDataset: Set<string>;
-	private readonly DATA_DIR = "data/";
+	private readonly DATA_DIR = "tempdata/"; // change back to data
 
 	constructor() {
 		this.existingDataset = new Set();
@@ -33,40 +33,30 @@ export default class InsightFacade implements IInsightFacade {
 		}
 
 		idValidator(id);
+		// A list of JSON sections
 		const courses = await readContent(content);
-		const path = `data/${id}`;
-
-		try {
-			const sections = courses[0].map(
-				(course: any) =>
-					new Section(
-						course.uuid,
-						course.id,
-						course.title,
-						course.instructor,
-						course.dept,
-						course.year,
-						course.avg,
-						course.pass,
-						course.fail,
-						course.audit
-					)
-			);
-			// make a directory if it does not exist otherwise use the directory
-			await fs.ensureDir(this.DATA_DIR);
-			// covert section instances to object
-			const sectionObj = sections.map((section: { instanceToObject: () => any }) => section.instanceToObject());
-			await fs.writeJSON(path, sectionObj);
-			this.existingDataset.add(id);
-		} catch (err) {
-			throw new InsightError(err instanceof Error ? err.message : String(err)); // chat gpt
+		if (courses.length === 0) {
+			throw new InsightError("No valid course found.");
 		}
+		// path is "data/${id}"
+		const path = this.DATA_DIR + id + ".json";
+		await fs.ensureDir(this.DATA_DIR);
+
+		for (const course of courses) {
+			if (!course) {
+				continue;
+			}
+			const sections = course.map((section: any) => Section.objectToInstance(section));
+			const sectionObj = sections.map((section: any) => section.instanceToObject());
+			fs.writeJSON(path, sectionObj);
+		}
+		this.existingDataset.add(id);
 		// convert set to array
 		return Array.from(this.existingDataset);
 	}
 
 	public async removeDataset(id: string): Promise<string> {
-		const path = `data/${id}`;
+		const path = this.DATA_DIR + id;
 		idValidator(id);
 		const fileExists = await fs.pathExists(path);
 

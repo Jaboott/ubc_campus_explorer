@@ -128,6 +128,12 @@ describe("InsightFacade", function () {
 			const result = facade.addDataset("test123", missingQueryKey, InsightDatasetKind.Sections);
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
+
+		it("should successfully add a large dataset", async function () {
+			const file = await getContentFromArchives("pair.zip");
+			const result = facade.addDataset("pair", file, InsightDatasetKind.Sections);
+			expect(result).to.have.deep.members(["pair"]);
+		});
 	});
 
 	describe("RemoveDataset", function () {
