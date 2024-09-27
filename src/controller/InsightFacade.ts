@@ -77,7 +77,7 @@ export default class InsightFacade implements IInsightFacade {
 		}
 		try {
 			await fs.remove(path);
-			this.existingDataset.delete(id); 
+			this.existingDataset.delete(id);
 			return id;
 		} catch (err) {
 			throw new InsightError(err instanceof Error ? err.message : String(err)); // chat gpt
@@ -94,14 +94,13 @@ export default class InsightFacade implements IInsightFacade {
 		// loop through the existing dataset
 		for (const id of this.existingDataset.keys()) {
 			// read the file
-            const promise = fs.readJson(this.DATA_DIR + id + ".json")
-            .then((content: string) => {
+			const promise = fs.readJson(this.DATA_DIR + id + ".json").then((content: string) => {
 				// get number of rows of this file and add this InsightDataset object to the result
-                const numRows = content.length;
-                return { id, kind: this.existingDataset.get(id), numRows };
-            })
+				const numRows = content.length;
+				return { id, kind: this.existingDataset.get(id), numRows };
+			});
 			result.push(promise);
-        }
+		}
 		return await Promise.all(result);
-    }
+	}
 }
