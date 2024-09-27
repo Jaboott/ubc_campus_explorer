@@ -40,6 +40,7 @@ export default class InsightFacade implements IInsightFacade {
 		idValidator(id);
 		// A list of JSON sections
 		const courses = await readContent(content);
+		// No valid section
 		if (courses.length === 0) {
 			throw new InsightError("No valid course found.");
 		}
@@ -49,6 +50,7 @@ export default class InsightFacade implements IInsightFacade {
 		await fs.ensureDir(this.DATA_DIR);
 
 		for (const course of courses) {
+			// This should not be needed anymore, the handling null course logic is done in helpers
 			if (!course) {
 				continue;
 			}

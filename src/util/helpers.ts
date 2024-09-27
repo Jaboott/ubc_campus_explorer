@@ -41,9 +41,16 @@ export async function readContent(content: string): Promise<any[]> {
 		// Process file that follows the path "courses/" and is not a directory (+ not .DS_Store) - not sure if there is a better way to do this
 		if (filename.startsWith("courses/") && !zipFile.files[filename].dir && !filename.endsWith(".DS_Store")) {
 			// Turn the file into text then check the validity of the section
-			const section = zipFile.files[filename].async("text").then((fileContent) => {
-				return processFile(fileContent);
-			});
+			const section = zipFile.files[filename]
+				.async("text")
+				.then((fileContent) => {
+					return processFile(fileContent);
+				})
+				.then((result) => {
+					if (result !== null) {
+						return result;
+					}
+				});
 			allPromises.push(section);
 		}
 	}
@@ -60,7 +67,7 @@ function processFile(fileContent: any): any {
 		if (courseValidator(courseJson)) {
 			return courseJson.result;
 		} else {
-			throw new InsightError("No valid course found.");
+			return null;
 		}
 	} catch (err) {
 		throw new InsightError(err instanceof Error ? err.message : String(err));
