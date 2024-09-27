@@ -58,8 +58,8 @@ export default class Section {
 			obj.Title,
 			obj.Professor,
 			obj.Subject,
-			obj.Avg,
 			obj.Year,
+			obj.Avg,
 			obj.Pass,
 			obj.Fail,
 			obj.Audit
