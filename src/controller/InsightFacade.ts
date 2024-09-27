@@ -15,7 +15,8 @@ const fs = require("fs-extra");
  *
  */
 export default class InsightFacade implements IInsightFacade {
-	private existingDataset: Set<string>; // Not sure if we need this, but we could use this set to keep track of added dataset IDs to avoid adding duplicates / removing dataset that is not added
+	private existingDataset: Set<string>;
+	private readonly DATA_DIR = "data/";
 
 	constructor() {
 		this.existingDataset = new Set();
@@ -26,11 +27,25 @@ export default class InsightFacade implements IInsightFacade {
 			throw new InsightError("Param not set");
 		}
 
-		// Throws InsightError if not valid
+		if (this.existingDataset.has(id)) {
+			throw new InsightError("Cannot add the same dataset twice");
+		}
+
 		idValidator(id);
 		const courses = await readContent(content);
-		// console.log(courses);
-		return Promise.resolve(courses.length);
+		const path = `data/${id}`;
+
+		try {
+			// make a directory if it does not exist
+			await fs.ensureDir(this.DATA_DIR);
+			// actually idk what to write to the disk
+			await fs.writeJSON(path, courses);
+			this.existingDataset.add(id);
+		} catch (err) {
+			throw new InsightError(err instanceof Error ? err.message : String(err)); // chat gpt
+		}
+		// convert set to array
+		return Array.from(this.existingDataset);
 	}
 
 	public async removeDataset(id: string): Promise<string> {
@@ -44,6 +59,7 @@ export default class InsightFacade implements IInsightFacade {
 
 		try {
 			await fs.remove(path);
+			this.existingDataset.delete(id);
 			return id;
 		} catch (err) {
 			throw new InsightError(err instanceof Error ? err.message : String(err)); // chat gpt
@@ -56,9 +72,8 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public async listDatasets(): Promise<InsightDataset[]> {
-		const path = `data/`;
 		const result: InsightDataset[] = [];
-		const datasetAdded = await fs.pathExists(path);
+		const datasetAdded = await fs.pathExists(this.DATA_DIR);
 		if (!datasetAdded) {
 			return result;
 		}

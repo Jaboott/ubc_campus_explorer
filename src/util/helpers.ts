@@ -56,6 +56,9 @@ export async function readContent(content: string): Promise<any> {
 
 	// for now results contains the all json objects
 	const results = await Promise.all(allPromises);
+	if (results.length === 0) {
+		throw new InsightError("No valid course found.");
+	}
 	return results;
 }
 
