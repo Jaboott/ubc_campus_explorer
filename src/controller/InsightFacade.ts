@@ -56,12 +56,12 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public async removeDataset(id: string): Promise<string> {
-		const path = this.DATA_DIR + id;
+		const path = `${this.DATA_DIR}${id}.json`;
 		idValidator(id);
-		const fileExists = await fs.pathExists(path);
+		const fileExists = await fs.pathExists(`${path}`);
 
 		if (!fileExists) {
-			throw new NotFoundError("ID does not exist");
+			throw new NotFoundError("ID does not exist!");
 		}
 
 		try {
