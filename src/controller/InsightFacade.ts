@@ -7,6 +7,7 @@ import {
 	NotFoundError,
 } from "./IInsightFacade";
 import { idValidator, readContent } from "../util/helpers";
+import Section from "./Section";
 const fs = require("fs-extra");
 
 /**
@@ -36,10 +37,26 @@ export default class InsightFacade implements IInsightFacade {
 		const path = `data/${id}`;
 
 		try {
-			// make a directory if it does not exist
+			const sections = courses[0].map(
+				(course: any) =>
+					new Section(
+						course.uuid,
+						course.id,
+						course.title,
+						course.instructor,
+						course.dept,
+						course.year,
+						course.avg,
+						course.pass,
+						course.fail,
+						course.audit
+					)
+			);
+			// make a directory if it does not exist otherwise use the directory
 			await fs.ensureDir(this.DATA_DIR);
-			// actually idk what to write to the disk
-			await fs.writeJSON(path, courses);
+			// covert section instances to object
+			const sectionObj = sections.map((section: { instanceToObject: () => any }) => section.instanceToObject());
+			await fs.writeJSON(path, sectionObj);
 			this.existingDataset.add(id);
 		} catch (err) {
 			throw new InsightError(err instanceof Error ? err.message : String(err)); // chat gpt
@@ -77,7 +94,8 @@ export default class InsightFacade implements IInsightFacade {
 		if (!datasetAdded) {
 			return result;
 		}
-		// const getDatasetIds = await fs.readdir(path);
+		// const getDatasetIds = await fs.readdir(this.DATA_DIR);
+		// console.log(getDatasetIds);
 		// TODO
 		return result;
 	}
