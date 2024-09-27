@@ -17,7 +17,7 @@ const fs = require("fs-extra");
  */
 export default class InsightFacade implements IInsightFacade {
 	private existingDataset: Set<string>;
-	private readonly DATA_DIR = "tempdata/"; // change back to data
+	private readonly DATA_DIR = "data/"; // change back to data
 
 	constructor() {
 		this.existingDataset = new Set();
@@ -56,12 +56,16 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public async removeDataset(id: string): Promise<string> {
-		const path = `${this.DATA_DIR}${id}.json`;
+		const path = this.DATA_DIR + id + ".json";
 		idValidator(id);
-		const fileExists = await fs.pathExists(`${path}`);
+		// const fileExists = await fs.pathExists(path);
 
-		if (!fileExists) {
-			throw new NotFoundError("ID does not exist!");
+		// if (!fileExists) {
+		// 	throw new NotFoundError(`${id} does not exist!`);
+		// }
+
+		if (!this.existingDataset.has(id)) {
+			throw new NotFoundError(`${id} does not exist!`);
 		}
 
 		try {
