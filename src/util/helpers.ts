@@ -47,7 +47,7 @@ export async function readContent(content: string): Promise<any> {
 				if (courseValidator(courseJson)) {
 					return courseJson.result;
 				} else {
-					return null;
+					throw new InsightError("No valid course found.");
 				}
 			});
 			allPromises.push(section);
@@ -62,7 +62,7 @@ function courseValidator(course: any): boolean {
 	const courseData = course.result;
 	const requiredFields = ["id", "Course", "Title", "Professor", "Subject", "Year", "Avg", "Pass", "Fail", "Audit"];
 	// If "result" is not present, throw an error
-	if (!courseData) {
+	if (!courseData || courseData.length === 0) {
 		return false;
 	}
 
