@@ -16,11 +16,11 @@ const fs = require("fs-extra");
  *
  */
 export default class InsightFacade implements IInsightFacade {
-	private existingDataset: Set<string>;
+	private existingDataset: Map<string, InsightDatasetKind>;
 	private readonly DATA_DIR = "data/"; // change back to data
 
 	constructor() {
-		this.existingDataset = new Set();
+		this.existingDataset = new Map();
 	}
 
 	public async addDataset(id: string, content: string, kind: InsightDatasetKind): Promise<string[]> {
@@ -62,10 +62,10 @@ export default class InsightFacade implements IInsightFacade {
 
 		// write to disk after coverting all data
 		await fs.writeJSON(path, allObjects);
-		// keep track of the id added
-		this.existingDataset.add(id);
-		// convert set to array
-		return Array.from(this.existingDataset);
+		// keep track of the id (and kind for list dataset)
+		this.existingDataset.set(id, kind);
+		// return list of id
+		return Array.from(this.existingDataset.keys());
 	}
 
 	public async removeDataset(id: string): Promise<string> {
@@ -80,7 +80,6 @@ export default class InsightFacade implements IInsightFacade {
 		if (!this.existingDataset.has(id)) {
 			throw new NotFoundError(`${id} does not exist!`);
 		}
-
 		try {
 			await fs.remove(path);
 			this.existingDataset.delete(id);
@@ -96,14 +95,17 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public async listDatasets(): Promise<InsightDataset[]> {
-		const result: InsightDataset[] = [];
-		const datasetAdded = await fs.pathExists(this.DATA_DIR);
-		if (!datasetAdded) {
-			return result;
+		const result: Promise<InsightDataset>[] = [];
+		// loop through the existing dataset
+		for (const id of this.existingDataset.keys()) {
+			// read the file
+			const promise = fs.readJson(this.DATA_DIR + id + ".json").then((content: string) => {
+				// get number of rows of this file and add this InsightDataset object to the result
+				const numRows = content.length;
+				return { id, kind: this.existingDataset.get(id), numRows };
+			});
+			result.push(promise);
 		}
-		// const getDatasetIds = await fs.readdir(this.DATA_DIR);
-		// console.log(getDatasetIds);
-		// TODO
-		return result;
+		return await Promise.all(result);
 	}
 }

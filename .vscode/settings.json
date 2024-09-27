@@ -18,5 +18,8 @@
 	"eslint.useFlatConfig": false,
 	"eslint.problems.shortenToSingleLine": true,
 	"eslint.run": "onSave",
-  	"prettier.useTabs": true
+	"prettier.useTabs": true,
+	"[json]": {
+		"editor.defaultFormatter": "vscode.json-language-features"
+	}
 }
