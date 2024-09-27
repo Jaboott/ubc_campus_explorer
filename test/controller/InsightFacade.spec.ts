@@ -37,7 +37,7 @@ describe("InsightFacade", function () {
 		await clearDisk();
 	});
 
-	describe("AddDataset", function () {
+	describe.only("AddDataset", function () {
 		beforeEach(function () {
 			// This section resets the insightFacade instance
 			// This runs before each test
@@ -133,6 +133,13 @@ describe("InsightFacade", function () {
 			const file = await getContentFromArchives("pair.zip");
 			const result = facade.addDataset("pair", file, InsightDatasetKind.Sections);
 			return expect(result).to.eventually.have.deep.members(["pair"]);
+		});
+		it("should reject when id already exist on disk", async function () {
+			const validFile = await getContentFromArchives("oneCourse.zip");
+			await facade.addDataset("pair", validFile, InsightDatasetKind.Sections);
+			const nFacade = new InsightFacade();
+			const result = nFacade.addDataset("pair", validFile, InsightDatasetKind.Sections);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
 	});
 

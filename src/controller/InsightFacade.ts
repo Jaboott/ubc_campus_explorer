@@ -6,8 +6,9 @@ import {
 	InsightResult,
 	NotFoundError,
 } from "./IInsightFacade";
-import { idValidator, readContent } from "../util/helpers";
+import { idValidator, readContent, readExistingDataset } from "../util/helpers";
 import Section from "./Section";
+
 const fs = require("fs-extra");
 
 /**
@@ -20,15 +21,25 @@ export default class InsightFacade implements IInsightFacade {
 	private readonly DATA_DIR = "data/"; // change back to data
 
 	constructor() {
-		this.existingDataset = new Map();
+		const path = this.DATA_DIR + "existingDataset.json";
+		// Making sure "data/" exists
+		if (!fs.existsSync(this.DATA_DIR)) {
+			fs.mkdirSync(this.DATA_DIR);
+		}
+		// Checking to see if existingDataset.json already exist
+		if (fs.existsSync(path)) {
+			this.existingDataset = readExistingDataset(path);
+		} else {
+			this.existingDataset = new Map();
+			// Creating "data/existingDataset.json"
+			fs.writeFileSync(path, "");
+		}
 	}
 
 	public async addDataset(id: string, content: string, kind: InsightDatasetKind): Promise<string[]> {
 		if (!id || !content || !kind) {
 			throw new InsightError("Param not set");
-		}
-
-		if (this.existingDataset.has(id)) {
+		} else if (this.existingDataset.has(id)) {
 			throw new InsightError("Cannot add the same dataset twice");
 		}
 
@@ -64,6 +75,15 @@ export default class InsightFacade implements IInsightFacade {
 		await fs.writeJSON(path, allObjects);
 		// keep track of the id (and kind for list dataset)
 		this.existingDataset.set(id, kind);
+		// Updating the existingDataset onto disk
+		const existingDatasetJson = Object.fromEntries(
+			// Making an array of [[key, value], [key2, value2]]
+			Array.from(this.existingDataset.entries()).map(([key, value]) => {
+				// convert value as string version of InsightDatasetKind
+				return [key, value === InsightDatasetKind.Sections ? "sections" : "rooms"];
+			})
+		);
+		await fs.writeJSON(this.DATA_DIR + "existingDataset.json", existingDatasetJson);
 		// return list of id
 		return Array.from(this.existingDataset.keys());
 	}

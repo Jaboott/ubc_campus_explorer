@@ -1,5 +1,18 @@
-import { InsightError } from "../controller/IInsightFacade";
+import { InsightDatasetKind, InsightError } from "../controller/IInsightFacade";
 import JSZip from "jszip";
+import * as fs from "fs";
+
+export function readExistingDataset(path: string): Map<string, InsightDatasetKind> {
+	const data = fs.readFileSync(path, "utf8");
+	const existingDataset = JSON.parse(data);
+	// Turn the json back to a map
+	const map = new Map(
+		Object.entries(existingDataset).map(([key, value]) => {
+			return [key, value === "section" ? InsightDatasetKind.Sections : InsightDatasetKind.Rooms];
+		})
+	);
+	return map;
+}
 
 export function idValidator(id: string): boolean {
 	// chatgpt generated regex expression
@@ -9,8 +22,6 @@ export function idValidator(id: string): boolean {
 		throw new InsightError("id invalid: " + id);
 	}
 
-	// TODO: should reject with an id that is the same as the id of an already added dataset
-	// maybe: for files in dataFolder, if a file that has the same ID already exists, reject
 	return true;
 }
 
