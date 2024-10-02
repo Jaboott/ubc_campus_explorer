@@ -37,7 +37,7 @@ describe("InsightFacade", function () {
 		await clearDisk();
 	});
 
-	describe("AddDataset", function () {
+	describe.only("AddDataset", function () {
 		beforeEach(function () {
 			// This section resets the insightFacade instance
 			// This runs before each test
@@ -128,9 +128,22 @@ describe("InsightFacade", function () {
 			const result = facade.addDataset("test123", missingQueryKey, InsightDatasetKind.Sections);
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
+
+		it("should successfully add a large dataset", async function () {
+			const file = await getContentFromArchives("pair.zip");
+			const result = facade.addDataset("pair", file, InsightDatasetKind.Sections);
+			return expect(result).to.eventually.have.deep.members(["pair"]);
+		});
+		it("should reject when id already exist on disk", async function () {
+			const validFile = await getContentFromArchives("oneCourse.zip");
+			await facade.addDataset("pair", validFile, InsightDatasetKind.Sections);
+			const nFacade = new InsightFacade();
+			const result = nFacade.addDataset("pair", validFile, InsightDatasetKind.Sections);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
 	});
 
-	describe("RemoveDataset", function () {
+	describe.only("RemoveDataset", function () {
 		beforeEach(function () {
 			// This section resets the insightFacade instance
 			// This runs before each test
@@ -183,9 +196,24 @@ describe("InsightFacade", function () {
 			const result = facade.removeDataset("test123");
 			return expect(result).to.eventually.be.rejectedWith(NotFoundError);
 		});
+
+		it("should successfully delete an existing dataset using a different instance", async function () {
+			await facade.addDataset("test123", sectionOne, InsightDatasetKind.Sections);
+			const nFacade = new InsightFacade();
+			const result = nFacade.removeDataset("test123");
+			return expect(result).to.eventually.equal("test123");
+		});
+
+		it("should reject when trying to remove a dataset that no longer exists (using a different instance)", async function () {
+			await facade.addDataset("test123", sectionOne, InsightDatasetKind.Sections);
+			await facade.removeDataset("test123");
+			const nFacade = new InsightFacade();
+			const result = nFacade.removeDataset("test123");
+			return expect(result).to.eventually.be.rejectedWith(NotFoundError);
+		});
 	});
 
-	describe("ListDatasets", function () {
+	describe.only("ListDatasets", function () {
 		beforeEach(function () {
 			// This section resets the insightFacade instance
 			// This runs before each test
