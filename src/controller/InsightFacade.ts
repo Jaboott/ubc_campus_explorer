@@ -103,6 +103,16 @@ export default class InsightFacade implements IInsightFacade {
 		try {
 			await fs.remove(path);
 			this.existingDataset.delete(id);
+
+			// Recreate json with modified existingDataset
+			const existingDatasetJson = Object.fromEntries(
+				Array.from(this.existingDataset.entries()).map(([key, value]) => {
+					// convert value as string version of InsightDatasetKind
+					return [key, value === InsightDatasetKind.Sections ? "sections" : "rooms"];
+				})
+			);
+			// save changes onto disk
+			await fs.writeJSON(this.DATA_DIR + "existingDataset.json", existingDatasetJson);
 			return id;
 		} catch (err) {
 			throw new InsightError(err instanceof Error ? err.message : String(err)); // chat gpt

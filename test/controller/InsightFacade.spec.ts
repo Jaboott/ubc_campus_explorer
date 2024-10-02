@@ -143,7 +143,7 @@ describe("InsightFacade", function () {
 		});
 	});
 
-	describe("RemoveDataset", function () {
+	describe.only("RemoveDataset", function () {
 		beforeEach(function () {
 			// This section resets the insightFacade instance
 			// This runs before each test
@@ -196,9 +196,24 @@ describe("InsightFacade", function () {
 			const result = facade.removeDataset("test123");
 			return expect(result).to.eventually.be.rejectedWith(NotFoundError);
 		});
+
+		it("should successfully delete an existing dataset using a different instance", async function () {
+			await facade.addDataset("test123", sectionOne, InsightDatasetKind.Sections);
+			const nFacade = new InsightFacade();
+			const result = nFacade.removeDataset("test123");
+			return expect(result).to.eventually.equal("test123");
+		});
+
+		it("should reject when trying to remove a dataset that no longer exists (using a different instance)", async function () {
+			await facade.addDataset("test123", sectionOne, InsightDatasetKind.Sections);
+			await facade.removeDataset("test123");
+			const nFacade = new InsightFacade();
+			const result = nFacade.removeDataset("test123");
+			return expect(result).to.eventually.be.rejectedWith(NotFoundError);
+		});
 	});
 
-	describe("ListDatasets", function () {
+	describe.only("ListDatasets", function () {
 		beforeEach(function () {
 			// This section resets the insightFacade instance
 			// This runs before each test
