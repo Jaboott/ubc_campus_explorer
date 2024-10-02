@@ -37,7 +37,7 @@ describe("InsightFacade", function () {
 		await clearDisk();
 	});
 
-	describe.only("AddDataset", function () {
+	describe("AddDataset", function () {
 		beforeEach(function () {
 			// This section resets the insightFacade instance
 			// This runs before each test
@@ -143,7 +143,7 @@ describe("InsightFacade", function () {
 		});
 	});
 
-	describe.only("RemoveDataset", function () {
+	describe("RemoveDataset", function () {
 		beforeEach(function () {
 			// This section resets the insightFacade instance
 			// This runs before each test
@@ -213,7 +213,7 @@ describe("InsightFacade", function () {
 		});
 	});
 
-	describe.only("ListDatasets", function () {
+	describe("ListDatasets", function () {
 		beforeEach(function () {
 			// This section resets the insightFacade instance
 			// This runs before each test
@@ -288,7 +288,7 @@ describe("InsightFacade", function () {
 		});
 	});
 
-	describe("PerformQuery", function () {
+	describe.only("PerformQuery", function () {
 		/**
 		 * Loads the TestQuery specified in the test name and asserts the behaviour of performQuery.
 		 *

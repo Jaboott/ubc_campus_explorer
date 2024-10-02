@@ -120,8 +120,14 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public async performQuery(query: unknown): Promise<InsightResult[]> {
-		// TODO: Remove this once you implement the methods!
-		throw new Error(`InsightFacadeImpl::performQuery() is unimplemented! - query=${query};`);
+		// query is not object type
+		if (!(query instanceof Object)) {
+			throw new InsightError("query is not object type");
+		}
+		// console.log(query);
+
+		//TODO Change later
+		return Array();
 	}
 
 	public async listDatasets(): Promise<InsightDataset[]> {
