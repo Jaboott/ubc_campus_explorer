@@ -13,6 +13,10 @@ interface WHERE {
 	GT?: Record<string, number>;
 	LT?: Record<string, number>;
 	EQ?: Record<string, number>;
+	IS?: Record<string, string>;
+	AND?: WHERE[]; // just realize maybe this doesn't work...
+	OR?: WHERE[];
+	NOT: WHERE;
 }
 
 interface Content {
@@ -114,7 +118,7 @@ export function handleOptions(content: any, resultSoFar: any): any {
 	// }
 }
 
-export function selectColumns(columns: string[], resultSoFar: any): any {
+function selectColumns(columns: string[], resultSoFar: any): any {
 	if (columns.length === 0) {
 		throw new InsightError("column must be an non empty array");
 	}
@@ -136,7 +140,7 @@ export function selectColumns(columns: string[], resultSoFar: any): any {
 	});
 }
 
-// export function applyOrder(columns: string[], order: string, resultSoFar: any) {
+// function applyOrder(columns: string[], order: string, resultSoFar: any) {
 // 	if (!columns.includes(order)) {
 // 		throw new InsightError("order key must be in column");
 // 	}
