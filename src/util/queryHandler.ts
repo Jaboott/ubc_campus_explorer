@@ -1,4 +1,5 @@
 import { InsightError } from "../controller/IInsightFacade";
+import * as fs from "fs";
 // import Section from "../controller/Section";
 
 export function checkQueryParams(query: any): void {
@@ -34,13 +35,16 @@ export function handleWhere(where: Object, columns: String[]) {
 	const firstColumn = columns[0];
 	const datasetName = firstColumn.split("_")[0]; // splits the words in columns list and gets first part only (ie. the dataset name)
 
-	// call applyComparator if GT, EQ, OR, AND, IS etc are keys in where
-	// if no comparators, get every row from a dataset
-	// let result = await ;
+	// get every row from a dataset
+	const rawData = fs.readFileSync(`${datasetName}.json`, "utf-8");
+	let resultSoFar = JSON.parse(rawData);
+
+	// call applyComparator if GT, EQ, OR, AND, IS etc are keys in where to filter down resultSoFar
 
 	// if the total number of rows exceeds 5000, throw ResultTooLargeError
 
 	// call handle options to filter out columns
+	console.log(resultSoFar);
 }
 
 export function applyComparator(comparator: Object, content: string) {}
