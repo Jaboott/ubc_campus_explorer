@@ -8,6 +8,7 @@ import {
 } from "./IInsightFacade";
 import { idValidator, readContent, readExistingDataset } from "../util/helpers";
 import Section from "./Section";
+import { checkQueryParams } from "../util/queryHandler";
 
 const fs = require("fs-extra");
 
@@ -120,11 +121,9 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public async performQuery(query: unknown): Promise<InsightResult[]> {
-		// query is not object type
-		if (!(query instanceof Object)) {
-			throw new InsightError("query is not object type");
-		}
-		// console.log(query);
+		const queryObject = Object(query);
+
+		checkQueryParams(queryObject);
 
 		//TODO Change later
 		return Array();
