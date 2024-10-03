@@ -129,12 +129,7 @@ function selectColumns(columns: string[], resultSoFar: any): any {
 		columns.forEach((column) => {
 			datasetValidator(column);
 			const key = column.split("_").slice(1).join("_"); // chatgpt generated to extract the string behind underscore
-			// if the key is valid, add the data to selectedResult else throw an error
-			if (item[key]) {
-				selectedResult[column] = item[key]; // column comes with datasetName but key does not
-			} else {
-				throw new InsightError("invalid key provided in column array");
-			}
+			selectedResult[column] = item[key]; // column comes with datasetName but key does not
 		});
 		return selectedResult;
 	});
