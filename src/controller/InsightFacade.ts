@@ -8,7 +8,7 @@ import {
 } from "./IInsightFacade";
 import { idValidator, readContent, readExistingDataset } from "../util/helpers";
 import Section from "./Section";
-import { checkQueryParams, handleWhere } from "../util/queryHandler";
+import { checkQueryParams, handleOptions, handleWhere } from "../util/queryHandler";
 
 const fs = require("fs-extra");
 
@@ -123,9 +123,8 @@ export default class InsightFacade implements IInsightFacade {
 	public async performQuery(query: unknown): Promise<InsightResult[]> {
 		const queryObject = Object(query);
 		checkQueryParams(queryObject);
-		handleWhere(query);
-		//TODO Change later
-		return Array();
+		const resultSoFar = handleWhere(query);
+		return handleOptions(query, resultSoFar);
 	}
 
 	public async listDatasets(): Promise<InsightDataset[]> {

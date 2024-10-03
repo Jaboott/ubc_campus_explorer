@@ -36,10 +36,18 @@ export function checkQueryParams(query: any): void {
 }
 
 // get the string before the underscore
-export function getDataset(content: Content): void {
+function getDataset(content: Content): void {
 	const regex = new RegExp(/^([^_]+)/); // chatgpt generated regex expression
-	const match = content.OPTIONS.COLUMNS[0].match(regex);
-	datasetName = match ? match[1] : "";
+	const match = content.OPTIONS.COLUMNS[0].match(regex); // get the dataset used in columns
+	datasetName = match ? match[1] : ""; // set the global variable
+}
+
+// check if the query is only referencing 1 dataset
+function datasetValidator(dataToCheck: string): void {
+	dataToCheck = dataToCheck.split("_")[0]; // chatgpt generated to extract the string before underscore
+	if (dataToCheck !== datasetName) {
+		throw new InsightError("Cannot reference more than 1 dataset");
+	}
 }
 
 function queryMapper(param: string, content: any, resultSoFar: any): void {
@@ -61,7 +69,8 @@ function queryMapper(param: string, content: any, resultSoFar: any): void {
 }
 
 // get all rows from a dataset and filter using comparator if necessary
-export function handleWhere(content: any): void {
+export function handleWhere(content: any): any {
+	getDataset(content);
 	const rawData = fs.readFileSync(`data/${datasetName}.json`, "utf-8");
 	let resultSoFar = JSON.parse(rawData);
 	content as Content;
@@ -72,21 +81,18 @@ export function handleWhere(content: any): void {
 	if (resultSoFar.length > MAX_RESULT) {
 		throw new ResultTooLargeError();
 	}
+	return resultSoFar;
 }
 
 export function applyComparator(comparator: string, content: Record<string, number>, result: any): any {
 	let key: string;
 	let keyToCompare: string;
 	let value: number;
-	let datasetUsed: string;
 	switch (comparator) {
 		case "GT":
 			key = Object.keys(content.GT)[0];
 			keyToCompare = key.split("_").slice(1).join("_"); // chatgpt generated to extract the string behind underscore
-			datasetUsed = key.split("_")[0]; // chatgpt generated to extract the string before underscore
-			if (datasetUsed !== datasetName) {
-				throw new InsightError("Cannot reference more than 1 dataset");
-			}
+			datasetValidator(key);
 			value = Object.values(content.GT)[0];
 			return result.filter((item: any) => item[keyToCompare] > value);
 		case "LT":
@@ -98,22 +104,40 @@ export function applyComparator(comparator: string, content: Record<string, numb
 	}
 }
 
-export function handleOptions(options: Options) {
-	const { COLUMNS, ORDER } = options;
-	selectColumns(COLUMNS);
-	if (ORDER) {
-		applyOrder(COLUMNS, ORDER);
-	}
+export function handleOptions(content: any, resultSoFar: any): any {
+	const contentObject = content as Content;
+	const result = selectColumns(contentObject.OPTIONS.COLUMNS, resultSoFar);
+	return result;
+	// TODO
+	// if (contentObject.OPTIONS.ORDER) {
+	// 	applyOrder(contentObject.OPTIONS.COLUMNS, contentObject.OPTIONS.ORDER, result);
+	// }
 }
 
-export function selectColumns(columns: string[]) {
+export function selectColumns(columns: string[], resultSoFar: any): any {
 	if (columns.length === 0) {
 		throw new InsightError("column must be an non empty array");
 	}
+	// Map through the resultSoFar to create a new array with only the selected columns.
+	return resultSoFar.map((item: any) => {
+		const selectedResult: Record<string, any> = {};
+		// loop through the column array
+		columns.forEach((column) => {
+			datasetValidator(column);
+			const key = column.split("_").slice(1).join("_"); // chatgpt generated to extract the string behind underscore
+			// if the key is valid, add the data to selectedResult else throw an error
+			if (item[key]) {
+				selectedResult[column] = item[key]; // column comes with datasetName but key does not
+			} else {
+				throw new InsightError("invalid key provided in column array");
+			}
+		});
+		return selectedResult;
+	});
 }
 
-export function applyOrder(columns: string[], order: string) {
-	if (!columns.includes(order)) {
-		throw new InsightError("order key must be in column");
-	}
-}
+// export function applyOrder(columns: string[], order: string, resultSoFar: any) {
+// 	if (!columns.includes(order)) {
+// 		throw new InsightError("order key must be in column");
+// 	}
+// }
