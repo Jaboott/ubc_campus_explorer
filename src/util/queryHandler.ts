@@ -128,7 +128,7 @@ function queryMapper(param: string, content: any, resultSoFar: any): any {
 		case "EQ":
 			return applyComparator(param, content, resultSoFar);
 		case "IS":
-			break; // TODO
+			break;
 		case "AND":
 			// loop over each comparison inside the AND clause
 			content.AND.forEach((clause: any) => {
@@ -163,7 +163,7 @@ export function handleWhere(content: any): any {
 	return resultSoFar;
 }
 
-export function applyComparator(comparator: string, content: Record<string, number>, result: any): any {
+function applyComparator(comparator: string, content: Record<string, number>, result: any): any {
 	let key: string;
 	let keyToCompare: string;
 	let value: number;
@@ -192,11 +192,10 @@ export function applyComparator(comparator: string, content: Record<string, numb
 
 export function handleOptions(content: any, resultSoFar: any): any {
 	const contentObject = content as Content;
-	const result = selectColumns(contentObject?.OPTIONS?.COLUMNS, resultSoFar);
-	// TODO ORDER
-	// if (contentObject?.OPTIONS?.ORDER) {
-	// 	result = applyOrder(contentObject?.OPTIONS?.COLUMNS, contentObject?.OPTIONS?.ORDER, result);
-	// }
+	let result = selectColumns(contentObject?.OPTIONS?.COLUMNS, resultSoFar);
+	if (contentObject?.OPTIONS?.ORDER) {
+		result = applyOrder(contentObject.OPTIONS.ORDER, result);
+	}
 	return result;
 }
 
@@ -214,8 +213,15 @@ function selectColumns(columns: string[], resultSoFar: any): any {
 	});
 }
 
-// function applyOrder(columns: string[], order: string, result: any): any {
-// 	const keyToSortBy = order.split("_").slice(1).join("_");
-// 	console.log(keyToSortBy);
-// 	return result;
-// }
+// source https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
+function applyOrder(order: string, result: any): any {
+	return result.sort((a: any, b: any) => {
+		if (a[order] < b[order]) {
+			return -1;
+		}
+		if (a[order] > b[order]) {
+			return 1;
+		}
+		return 0;
+	});
+}
