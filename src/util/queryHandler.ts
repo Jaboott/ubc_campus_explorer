@@ -26,9 +26,12 @@ interface Content {
 
 export function queryValidator(query: any): void {
 	const queryContent = query as Content;
+	const validKeys = ["WHERE", "OPTIONS"];
+	const queryKeys = Object.keys(queryContent);
 
-	if (!Object.hasOwn(queryContent, "WHERE") || !Object.hasOwn(queryContent, "OPTIONS")) {
-		throw new InsightError("Query must include both WHERE and OPTIONS ");
+	// Check if query only include WHERE and OPTIONS
+	if (queryKeys.length !== validKeys.length || !validKeys.every((key) => queryKeys.includes(key))) {
+		throw new InsightError("Query must include only WHERE and OPTIONS");
 	}
 
 	// Special case when WHERE has no filter is valid
@@ -38,11 +41,10 @@ export function queryValidator(query: any): void {
 	optionsValidator(queryContent.OPTIONS);
 }
 
-//TODO need to check for idstring, check keys in WHERE, unexpected keys in QUERY, maybe more...
 function filterValidator(filter: FILTER): void {
-	// Guarantee that the filter is not empty
-	if (Object.keys(filter).length === 0) {
-		throw new InsightError("FILTER can't be left empty");
+	// Filter can only have 1 key
+	if (Object.keys(filter).length !== 1) {
+		throw new InsightError("FILTER must have 1 key");
 	}
 	const validKeys = ["LT", "GT", "EQ", "IS", "AND", "OR", "NOT"];
 
@@ -57,9 +59,15 @@ function filterValidator(filter: FILTER): void {
 	if (filter.LT || filter.GT || filter.EQ) {
 		const body = filter.LT || filter.GT || filter.EQ;
 		checkFilter(body as Object, "number", "MCOMPARATOR");
+		checkKey(Object.keys(body as Object)[0], "mkey");
 	} else if (filter.IS) {
 		const body = filter.IS;
 		checkFilter(body as Object, "string", "SCOMPARATOR");
+		const inputString = new RegExp(/^(\*[^*]*|\*?[^*]*\*?)$/); // chatgpt generated to check for middle asterisk
+		if (!inputString.test(body[Object.keys(body)[0]])) {
+			throw new InsightError("Asterisk must only be in first or last characters of input string");
+		}
+		checkKey(Object.keys(body as Object)[0], "skey");
 	} else if (filter.NOT) {
 		filterValidator(filter.NOT);
 	} else if (filter.AND || filter.OR) {
@@ -71,6 +79,38 @@ function filterValidator(filter: FILTER): void {
 			throw new InsightError("AND/OR can't have empty array");
 		}
 		body.forEach((sFilter) => filterValidator(sFilter));
+	}
+}
+
+function checkKey(key: string, type: string): void {
+	const mfield = ["avg", "pass", "fail", "audit", "year"];
+	const sfield = ["dept", "id", "instructor", "title", "uuid"];
+	const idString = new RegExp(/^(?!\\s*$)(?!.*_).+$/);
+	const keyValidator = new RegExp(/^(?=\S)(?=.*_).+$/);
+
+	if (!keyValidator.test(key)) {
+		throw new InsightError("Invalid key");
+	}
+
+	const id = key.split("_")[0];
+	const field = key.split("_")[1];
+
+	// If id or field is empty or invalid idstring
+	if (!id || !field || !idString.test(id)) {
+		throw new InsightError("Invalid idstring");
+	}
+
+	switch (type) {
+		case "mkey":
+			if (!mfield.includes(field)) {
+				throw new InsightError("Invalid mkey");
+			}
+			break;
+		case "skey":
+			if (!sfield.includes(field)) {
+				throw new InsightError("Invalid skey");
+			}
+			break;
 	}
 }
 
