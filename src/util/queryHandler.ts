@@ -2,6 +2,7 @@ import { InsightError, ResultTooLargeError } from "../controller/IInsightFacade"
 import * as fs from "fs";
 
 const MAX_RESULT = 5000;
+const VALID_FIELDS = ["avg", "pass", "fail", "audit", "year", "dept", "id", "instructr", "title", "uuid"];
 let datasetName = "";
 
 interface OPTIONS {
@@ -99,8 +100,17 @@ function optionsValidator(options: OPTIONS): void {
 		throw new InsightError("COLUMNS must be a non-empty array");
 	}
 
+	// TODO column field validation
+	for (const column of options.COLUMNS) {
+		const field = column.split("_")[1];
+		if (!VALID_FIELDS.includes(field)) {
+			throw new InsightError(`Invalid field: ${field} detected in columns`);
+		}
+	}
+
+	// TODO order validation
 	if (options.ORDER && !options.COLUMNS.includes(options.ORDER)) {
-		throw new InsightError("ORDER key must in COLUMNS");
+		throw new InsightError("ORDER key must be in OPTIONS and not in COLUMNS");
 	}
 }
 
