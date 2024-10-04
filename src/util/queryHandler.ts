@@ -2,7 +2,7 @@ import { InsightError, ResultTooLargeError } from "../controller/IInsightFacade"
 import * as fs from "fs";
 
 const MAX_RESULT = 5000;
-const VALID_FIELDS = ["avg", "pass", "fail", "audit", "year", "dept", "id", "instructr", "title", "uuid"];
+const VALID_FIELDS = ["avg", "pass", "fail", "audit", "year", "dept", "id", "instructor", "title", "uuid"];
 let datasetName = "";
 
 interface OPTIONS {
@@ -191,8 +191,13 @@ function queryMapper(param: string, content: any, resultSoFar: any): any {
 			return result;
 		case "OR":
 			break;
-		case "NOT":
-			break; // TODO
+		case "NOT": {
+			const comparator = Object.keys(content.NOT)[0];
+			const tempResult = queryMapper(comparator, content.NOT, resultSoFar);
+			// negation - only keep those items from result that do NOT appear in tempResult.
+			result = result.filter((item) => !tempResult.includes(item));
+			return result;
+		}
 		default:
 			return;
 	}
