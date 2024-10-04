@@ -2,6 +2,7 @@ import { InsightError, ResultTooLargeError } from "../controller/IInsightFacade"
 import * as fs from "fs";
 
 const MAX_RESULT = 5000;
+const VALID_FIELDS = ["avg", "pass", "fail", "audit", "year", "dept", "id", "instructr", "title", "uuid"];
 let datasetName = "";
 
 interface OPTIONS {
@@ -139,8 +140,17 @@ function optionsValidator(options: OPTIONS): void {
 		throw new InsightError("COLUMNS must be a non-empty array");
 	}
 
+	// TODO column field validation
+	for (const column of options.COLUMNS) {
+		const field = column.split("_")[1];
+		if (!VALID_FIELDS.includes(field)) {
+			throw new InsightError(`Invalid field: ${field} detected in columns`);
+		}
+	}
+
+	// TODO order validation
 	if (options.ORDER && !options.COLUMNS.includes(options.ORDER)) {
-		throw new InsightError("ORDER key must in COLUMNS");
+		throw new InsightError("ORDER key must be in OPTIONS and not in COLUMNS");
 	}
 }
 
@@ -168,7 +178,7 @@ function queryMapper(param: string, content: any, resultSoFar: any): any {
 		case "EQ":
 			return applyComparator(param, content, resultSoFar);
 		case "IS":
-			break; // TODO
+			break;
 		case "AND":
 			// loop over each comparison inside the AND clause
 			content.AND.forEach((clause: any) => {
@@ -203,7 +213,7 @@ export function handleWhere(content: any): any {
 	return resultSoFar;
 }
 
-export function applyComparator(comparator: string, content: Record<string, number>, result: any): any {
+function applyComparator(comparator: string, content: Record<string, number>, result: any): any {
 	let key: string;
 	let keyToCompare: string;
 	let value: number;
@@ -232,11 +242,10 @@ export function applyComparator(comparator: string, content: Record<string, numb
 
 export function handleOptions(content: any, resultSoFar: any): any {
 	const contentObject = content as Content;
-	const result = selectColumns(contentObject?.OPTIONS?.COLUMNS, resultSoFar);
-	// TODO ORDER
-	// if (contentObject?.OPTIONS?.ORDER) {
-	// 	result = applyOrder(contentObject?.OPTIONS?.COLUMNS, contentObject?.OPTIONS?.ORDER, result);
-	// }
+	let result = selectColumns(contentObject?.OPTIONS?.COLUMNS, resultSoFar);
+	if (contentObject?.OPTIONS?.ORDER) {
+		result = applyOrder(contentObject.OPTIONS.ORDER, result);
+	}
 	return result;
 }
 
@@ -254,8 +263,15 @@ function selectColumns(columns: string[], resultSoFar: any): any {
 	});
 }
 
-// function applyOrder(columns: string[], order: string, result: any): any {
-// 	const keyToSortBy = order.split("_").slice(1).join("_");
-// 	console.log(keyToSortBy);
-// 	return result;
-// }
+// source https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
+function applyOrder(order: string, result: any): any {
+	return result.sort((a: any, b: any) => {
+		if (a[order] < b[order]) {
+			return -1;
+		}
+		if (a[order] > b[order]) {
+			return 1;
+		}
+		return 0;
+	});
+}
