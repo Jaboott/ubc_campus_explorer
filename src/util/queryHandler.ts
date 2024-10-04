@@ -194,8 +194,13 @@ function queryMapper(param: string, content: any, resultSoFar: any): any {
 			return result;
 		case "OR":
 			break;
-		case "NOT":
-			break; // TODO
+		case "NOT": {
+			const comparator = Object.keys(content.NOT)[0];
+			const tempResult = queryMapper(comparator, content.NOT, resultSoFar);
+			// negation - only keep those items from result that do NOT appear in tempResult.
+			result = result.filter((item) => !tempResult.includes(item));
+			return result;
+		}
 		default:
 			return;
 	}
