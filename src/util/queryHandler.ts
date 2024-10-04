@@ -2,7 +2,7 @@ import { InsightError, ResultTooLargeError } from "../controller/IInsightFacade"
 import * as fs from "fs";
 
 const MAX_RESULT = 5000;
-const VALID_FIELDS = ["avg", "pass", "fail", "audit", "year", "dept", "id", "instructr", "title", "uuid"];
+const VALID_FIELDS = ["avg", "pass", "fail", "audit", "year", "dept", "id", "instructor", "title", "uuid"];
 let datasetName = "";
 
 interface OPTIONS {
@@ -88,21 +88,24 @@ function checkFilter(bodyObject: Object, type: string, filterType: string): void
 
 // TODO haven't done it yet
 function optionsValidator(options: OPTIONS): void {
+	// check that OPTIONS is non empty
 	if (Object.keys(options).length === 0) {
 		throw new InsightError("OPTIONS can't be left empty");
 	}
 
+	// check that COLUMNS key is present in OPTIONS
 	if (!Object.hasOwn(options, "COLUMNS")) {
 		throw new InsightError("OPTIONS missing COLUMNS");
 	}
 
+	// check that COLUMNS is non-empty
 	if (options.COLUMNS.length === 0) {
 		throw new InsightError("COLUMNS must be a non-empty array");
 	}
 
-	// TODO column field validation
+	// check that each field specified in the desired columns is valid
 	for (const column of options.COLUMNS) {
-		const field = column.split("_")[1];
+		const field = column.split("_")[1]; // gets part of column name after "_" (the field)
 		if (!VALID_FIELDS.includes(field)) {
 			throw new InsightError(`Invalid field: ${field} detected in columns`);
 		}
