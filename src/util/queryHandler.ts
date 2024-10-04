@@ -99,7 +99,9 @@ function optionsValidator(options: OPTIONS): void {
 		throw new InsightError("COLUMNS must be a non-empty array");
 	}
 
-	// TODO validate ORDER
+	if (options.ORDER && !options.COLUMNS.includes(options.ORDER)) {
+		throw new InsightError("ORDER key must in COLUMNS");
+	}
 }
 
 function getDataset(content: Content): void {
@@ -199,9 +201,6 @@ export function handleOptions(content: any, resultSoFar: any): any {
 }
 
 function selectColumns(columns: string[], resultSoFar: any): any {
-	if (columns?.length === 0) {
-		throw new InsightError("column must be an non empty array");
-	}
 	// Map through the resultSoFar to create a new array with only the selected columns.
 	return resultSoFar?.map((item: any) => {
 		const selectedResult: Record<string, any> = {};
@@ -216,10 +215,7 @@ function selectColumns(columns: string[], resultSoFar: any): any {
 }
 
 // function applyOrder(columns: string[], order: string, result: any): any {
-// 	if (!columns.includes(order)) {
-// 		throw new InsightError("order key must be in column");
-// 	}
-// 	// const keyToSortBy = order.split("_").slice(1).join("_");
-// 	// console.log(keyToSortBy);
+// 	const keyToSortBy = order.split("_").slice(1).join("_");
+// 	console.log(keyToSortBy);
 // 	return result;
 // }
