@@ -2,7 +2,6 @@ import { InsightError, ResultTooLargeError } from "../controller/IInsightFacade"
 import * as fs from "fs";
 
 const MAX_RESULT = 5000;
-const VALID_FIELDS = ["avg", "pass", "fail", "audit", "year", "dept", "id", "instructor", "title", "uuid"];
 let datasetName = "";
 
 interface OPTIONS {
@@ -86,8 +85,8 @@ function filterValidator(filter: FILTER): void {
 function checkKey(key: string, type: string): void {
 	const mfield = ["avg", "pass", "fail", "audit", "year"];
 	const sfield = ["dept", "id", "instructor", "title", "uuid"];
-	const idString = new RegExp(/^(?!\\s*$)(?!.*_).+$/);
-	const keyValidator = new RegExp(/^(?=\S)(?=.*_).+$/);
+	// chatgpt generated to check for string with only 1 _ and not empty or white space only
+	const keyValidator = new RegExp(/^(?=\S)(?=[^_]*_)[^_]*_[^_]*$/);
 
 	if (!keyValidator.test(key)) {
 		throw new InsightError("Invalid key");
@@ -96,9 +95,9 @@ function checkKey(key: string, type: string): void {
 	const id = key.split("_")[0];
 	const field = key.split("_")[1];
 
-	// If id or field is empty or invalid idstring
-	if (!id || !field || !idString.test(id)) {
-		throw new InsightError("Invalid idstring");
+	// If id or field is empty
+	if (!id || !field) {
+		throw new InsightError(`Invalid key ${key}`);
 	}
 
 	switch (type) {
@@ -126,16 +125,18 @@ function checkFilter(bodyObject: Object, type: string, filterType: string): void
 	}
 }
 
-// TODO haven't done it yet
 function optionsValidator(options: OPTIONS): void {
-	// check that OPTIONS is non empty
+	const mfield = ["avg", "pass", "fail", "audit", "year"];
+	const sfield = ["dept", "id", "instructor", "title", "uuid"];
+	const optionKeys = ["COLUMNS", "ORDER"];
+	// check that OPTIONS is non-empty
 	if (Object.keys(options).length === 0) {
 		throw new InsightError("OPTIONS can't be left empty");
 	}
 
-	// check that COLUMNS key is present in OPTIONS
-	if (!Object.hasOwn(options, "COLUMNS")) {
-		throw new InsightError("OPTIONS missing COLUMNS");
+	// Check if query has COLUMNS and does not include any invalid key
+	if (!Object.hasOwn(options, "COLUMNS") || !Object.keys(options as Object).every((key) => optionKeys.includes(key))) {
+		throw new InsightError("OPTIONS must include only COLUMNS and ORDER");
 	}
 
 	// check that COLUMNS is non-empty
@@ -145,13 +146,21 @@ function optionsValidator(options: OPTIONS): void {
 
 	// check that each field specified in the desired columns is valid
 	for (const column of options.COLUMNS) {
+		const id = column.split("_")[0];
 		const field = column.split("_")[1]; // gets part of column name after "_" (the field)
-		if (!VALID_FIELDS.includes(field)) {
+		const keyValidator = new RegExp(/^(?=\S)(?=[^_]*_)[^_]*_[^_]*$/);
+
+		// Guarantee that key only has 1 _
+		if (!keyValidator.test(column) || !id || !field) {
+			throw new InsightError(`Invalid key: ${column}`);
+		}
+		// id score should be implicitly checked by validating the key
+		if (!mfield.includes(field) && !sfield.includes(field)) {
 			throw new InsightError(`Invalid field: ${field} detected in columns`);
 		}
 	}
 
-	// TODO order validation
+	// Checking if a field in ORDER is not in COLUMNS
 	if (options.ORDER && !options.COLUMNS.includes(options.ORDER)) {
 		throw new InsightError("ORDER key must be in OPTIONS and not in COLUMNS");
 	}
