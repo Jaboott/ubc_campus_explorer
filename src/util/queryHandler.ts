@@ -14,9 +14,9 @@ interface WHERE {
 	LT?: Record<string, number>;
 	EQ?: Record<string, number>;
 	IS?: Record<string, string>;
-	AND?: WHERE[]; // just realize maybe this doesn't work...
+	AND?: WHERE[];
 	OR?: WHERE[];
-	NOT: WHERE;
+	NOT?: WHERE;
 }
 
 interface Content {
@@ -30,7 +30,7 @@ export function checkQueryParams(query: any): void {
 	try {
 		// Throws error if any field is empty
 		requiredQueryFields.every((field) => {
-			if (query[field].length === 0) {
+			if (query[field]?.length === 0) {
 				throw new InsightError(field + " field is empty");
 			}
 		});
@@ -39,11 +39,12 @@ export function checkQueryParams(query: any): void {
 	}
 }
 
-// get the string before the underscore
 function getDataset(content: Content): void {
 	const regex = new RegExp(/^([^_]+)/); // chatgpt generated regex expression
 	const match = content.OPTIONS.COLUMNS[0].match(regex); // get the dataset used in columns
-	datasetName = match ? match[1] : ""; // set the global variable
+	if (!datasetName) {
+		datasetName = match ? match[1] : ""; // set the global variable
+	}
 }
 
 // check if the query is only referencing 1 dataset
@@ -54,7 +55,8 @@ function datasetValidator(dataToCheck: string): void {
 	}
 }
 
-function queryMapper(param: string, content: any, resultSoFar: any): void {
+function queryMapper(param: string, content: any, resultSoFar: any): any {
+	let result: any[] = resultSoFar;
 	switch (param) {
 		case "GT":
 		case "LT":
@@ -63,8 +65,17 @@ function queryMapper(param: string, content: any, resultSoFar: any): void {
 		case "IS":
 			break; // TODO
 		case "AND":
+			// loop over each comparison inside the AND clause
+			content.AND.forEach((clause: any) => {
+				for (const key in clause) {
+					const tempResult = queryMapper(key, clause, resultSoFar);
+					// check if each item is in both tempResult and result - but seems to be a bit slow(?
+					result = result.filter((item) => tempResult.includes(item));
+				}
+			});
+			return result;
 		case "OR":
-			break; // TODO
+			break;
 		case "NOT":
 			break; // TODO
 		default:
@@ -80,9 +91,8 @@ export function handleWhere(content: any): any {
 	content as Content;
 	for (const param in content.WHERE) {
 		resultSoFar = queryMapper(param, content.WHERE, resultSoFar);
-		// console.log(resultSoFar.length);
 	}
-	if (resultSoFar.length > MAX_RESULT) {
+	if (resultSoFar?.length > MAX_RESULT) {
 		throw new ResultTooLargeError();
 	}
 	return resultSoFar;
@@ -93,6 +103,7 @@ export function applyComparator(comparator: string, content: Record<string, numb
 	let keyToCompare: string;
 	let value: number;
 	switch (comparator) {
+		// this could probably be written in a better way
 		case "GT":
 			key = Object.keys(content.GT)[0];
 			keyToCompare = key.split("_").slice(1).join("_"); // chatgpt generated to extract the string behind underscore
@@ -100,30 +111,36 @@ export function applyComparator(comparator: string, content: Record<string, numb
 			value = Object.values(content.GT)[0];
 			return result.filter((item: any) => item[keyToCompare] > value);
 		case "LT":
-			// TODO
-			break;
+			key = Object.keys(content.LT)[0];
+			keyToCompare = key.split("_").slice(1).join("_"); // chatgpt generated to extract the string behind underscore
+			datasetValidator(key);
+			value = Object.values(content.LT)[0];
+			return result.filter((item: any) => item[keyToCompare] < value);
 		case "EQ":
-			// TODO
-			break;
+			key = Object.keys(content.EQ)[0];
+			keyToCompare = key.split("_").slice(1).join("_"); // chatgpt generated to extract the string behind underscore
+			datasetValidator(key);
+			value = Object.values(content.EQ)[0];
+			return result.filter((item: any) => item[keyToCompare] === value);
 	}
 }
 
 export function handleOptions(content: any, resultSoFar: any): any {
 	const contentObject = content as Content;
-	const result = selectColumns(contentObject.OPTIONS.COLUMNS, resultSoFar);
-	return result;
-	// TODO
-	// if (contentObject.OPTIONS.ORDER) {
-	// 	applyOrder(contentObject.OPTIONS.COLUMNS, contentObject.OPTIONS.ORDER, result);
+	const result = selectColumns(contentObject?.OPTIONS?.COLUMNS, resultSoFar);
+	// TODO ORDER
+	// if (contentObject?.OPTIONS?.ORDER) {
+	// 	result = applyOrder(contentObject?.OPTIONS?.COLUMNS, contentObject?.OPTIONS?.ORDER, result);
 	// }
+	return result;
 }
 
 function selectColumns(columns: string[], resultSoFar: any): any {
-	if (columns.length === 0) {
+	if (columns?.length === 0) {
 		throw new InsightError("column must be an non empty array");
 	}
 	// Map through the resultSoFar to create a new array with only the selected columns.
-	return resultSoFar.map((item: any) => {
+	return resultSoFar?.map((item: any) => {
 		const selectedResult: Record<string, any> = {};
 		// loop through the column array
 		columns.forEach((column) => {
@@ -135,8 +152,11 @@ function selectColumns(columns: string[], resultSoFar: any): any {
 	});
 }
 
-// function applyOrder(columns: string[], order: string, resultSoFar: any) {
+// function applyOrder(columns: string[], order: string, result: any): any {
 // 	if (!columns.includes(order)) {
 // 		throw new InsightError("order key must be in column");
 // 	}
+// 	// const keyToSortBy = order.split("_").slice(1).join("_");
+// 	// console.log(keyToSortBy);
+// 	return result;
 // }

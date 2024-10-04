@@ -356,6 +356,7 @@ describe("InsightFacade", function () {
 		it("[valid/containString.json] SELECT dept, avg  WHERE dept IS *cnt*", checkQuery);
 		it("[valid/matchString.json] SELECT dept, avg  WHERE dept IS cnto", checkQuery);
 		it("[valid/logicAnd.json] SELECT dept, avg WHERE avg > 20 AND avg < 40", checkQuery);
+		it("[valid/nestedAnd.json] SELECT dept, (avg > 35 AND pass < 100) AND avg < 40", checkQuery);
 		it("[valid/logicOr.json] SELECT dept, avg WHERE title IS *hong* OR avg = 98", checkQuery);
 		it("[valid/multipleWhere.json] SELECT dept, avg WHERE avg = 98", checkQuery);
 		it("[valid/negationNumber.json] SELECT dept, avg WHERE NOT avg < 99", checkQuery);
