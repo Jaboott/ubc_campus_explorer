@@ -90,6 +90,16 @@ function optionsValidator(options: OPTIONS): void {
 	if (Object.keys(options).length === 0) {
 		throw new InsightError("OPTIONS can't be left empty");
 	}
+
+	if (!Object.hasOwn(options, "COLUMNS")) {
+		throw new InsightError("OPTIONS missing COLUMNS");
+	}
+
+	if (options.COLUMNS.length === 0) {
+		throw new InsightError("COLUMNS must be a non-empty array");
+	}
+
+	// TODO validate ORDER
 }
 
 function getDataset(content: Content): void {
