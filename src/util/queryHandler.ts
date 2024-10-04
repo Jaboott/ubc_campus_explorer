@@ -4,38 +4,91 @@ import * as fs from "fs";
 const MAX_RESULT = 5000;
 let datasetName = "";
 
-interface Options {
+interface OPTIONS {
 	COLUMNS: string[];
 	ORDER?: string;
 }
 
-interface WHERE {
-	GT?: Record<string, number>;
+interface FILTER {
 	LT?: Record<string, number>;
+	GT?: Record<string, number>;
 	EQ?: Record<string, number>;
 	IS?: Record<string, string>;
-	AND?: WHERE[];
-	OR?: WHERE[];
-	NOT?: WHERE;
+	AND?: FILTER[];
+	OR?: FILTER[];
+	NOT?: FILTER;
 }
 
 interface Content {
-	WHERE: WHERE;
-	OPTIONS: Options;
+	WHERE: FILTER;
+	OPTIONS: OPTIONS;
 }
 
-export function checkQueryParams(query: any): void {
-	const requiredQueryFields = ["WHERE", "OPTIONS"];
-	// needed incase the field itself doesn't exist
-	try {
-		// Throws error if any field is empty
-		requiredQueryFields.every((field) => {
-			if (query[field]?.length === 0) {
-				throw new InsightError(field + " field is empty");
-			}
-		});
-	} catch (err) {
-		throw new InsightError(err instanceof Error ? err.message : String(err));
+export function queryValidator(query: any): void {
+	const queryContent = query as Content;
+
+	if (!Object.hasOwn(queryContent, "WHERE") || !Object.hasOwn(queryContent, "OPTIONS")) {
+		throw new InsightError("Query must include both WHERE and OPTIONS ");
+	}
+
+	// Special case when WHERE has no filter is valid
+	if (Object.keys(queryContent.WHERE).length !== 0) {
+		filterValidator(queryContent.WHERE);
+	}
+	optionsValidator(queryContent.OPTIONS);
+}
+
+//TODO need to check for idstring, check keys in WHERE, unexpected keys in QUERY, maybe more...
+function filterValidator(filter: FILTER): void {
+	// Guarantee that the filter is not empty
+	if (Object.keys(filter).length === 0) {
+		throw new InsightError("FILTER can't be left empty");
+	}
+	const validKeys = ["LT", "GT", "EQ", "IS", "AND", "OR", "NOT"];
+
+	// Check if the key is valid
+	Object.keys(filter).forEach((key) => {
+		if (!validKeys.includes(key)) {
+			throw new InsightError("FILTER contains unknown key: " + key);
+		}
+	});
+
+	// LT, GT, and EQ can only have 1 key
+	if (filter.LT || filter.GT || filter.EQ) {
+		const body = filter.LT || filter.GT || filter.EQ;
+		checkFilter(body as Object, "number", "MCOMPARATOR");
+	} else if (filter.IS) {
+		const body = filter.IS;
+		checkFilter(body as Object, "string", "SCOMPARATOR");
+	} else if (filter.NOT) {
+		filterValidator(filter.NOT);
+	} else if (filter.AND || filter.OR) {
+		const body = filter.AND || filter.OR;
+		if (!body || !Array.isArray(body)) {
+			throw new InsightError("AND/OR needs to have an array as body");
+		}
+		if (body.length === 0) {
+			throw new InsightError("AND/OR can't have empty array");
+		}
+		body.forEach((sFilter) => filterValidator(sFilter));
+	}
+}
+
+function checkFilter(bodyObject: Object, type: string, filterType: string): void {
+	if (Object.keys(bodyObject).length !== 1) {
+		throw new InsightError(filterType + " should only include 1 key");
+	}
+	const key = Object.keys(bodyObject)[0];
+	const bodyRecord = bodyObject as Record<string, any>;
+	if (typeof bodyRecord[key] !== type) {
+		throw new InsightError(filterType + " value should be a " + type);
+	}
+}
+
+// TODO haven't done it yet
+function optionsValidator(options: OPTIONS): void {
+	if (Object.keys(options).length === 0) {
+		throw new InsightError("OPTIONS can't be left empty");
 	}
 }
 
