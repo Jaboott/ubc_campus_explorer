@@ -37,7 +37,7 @@ describe("InsightFacade", function () {
 		await clearDisk();
 	});
 
-	describe.only("AddDataset", function () {
+	describe("AddDataset", function () {
 		beforeEach(function () {
 			// This section resets the insightFacade instance
 			// This runs before each test
@@ -143,7 +143,7 @@ describe("InsightFacade", function () {
 		});
 	});
 
-	describe.only("RemoveDataset", function () {
+	describe("RemoveDataset", function () {
 		beforeEach(function () {
 			// This section resets the insightFacade instance
 			// This runs before each test
@@ -213,7 +213,7 @@ describe("InsightFacade", function () {
 		});
 	});
 
-	describe.only("ListDatasets", function () {
+	describe("ListDatasets", function () {
 		beforeEach(function () {
 			// This section resets the insightFacade instance
 			// This runs before each test
@@ -288,7 +288,7 @@ describe("InsightFacade", function () {
 		});
 	});
 
-	describe("PerformQuery", function () {
+	describe.only("PerformQuery", function () {
 		/**
 		 * Loads the TestQuery specified in the test name and asserts the behaviour of performQuery.
 		 *
@@ -356,13 +356,14 @@ describe("InsightFacade", function () {
 		it("[valid/containString.json] SELECT dept, avg  WHERE dept IS *cnt*", checkQuery);
 		it("[valid/matchString.json] SELECT dept, avg  WHERE dept IS cnto", checkQuery);
 		it("[valid/logicAnd.json] SELECT dept, avg WHERE avg > 20 AND avg < 40", checkQuery);
+		it("[valid/nestedAnd.json] SELECT dept, (avg > 35 AND pass < 100) AND avg < 40", checkQuery);
 		it("[valid/logicOr.json] SELECT dept, avg WHERE title IS *hong* OR avg = 98", checkQuery);
 		it("[valid/multipleWhere.json] SELECT dept, avg WHERE avg = 98", checkQuery);
 		it("[valid/negationNumber.json] SELECT dept, avg WHERE NOT avg < 99", checkQuery);
 		it("[valid/negationString.json] SELECT fail, audit WHERE NOT dept IS *", checkQuery);
 		it("[valid/anyOrder.json] SELECT dept, avg WHERE avg = 97", checkQuery);
 		it("[valid/emptyResult.json] SELECT dept, avg WHERE year = 0", checkQuery);
-		it("[valid/andStringNumber.json] SELECT instructor, title WHERE dept IS *or AND year = 1900", checkQuery);
+		it("[valid/andStringNumber.json] SELECT instructor and uuid WHERE dept IS z* AND year = 2015", checkQuery);
 		it("[invalid/resultTooLarge.json] Result too large error", checkQuery);
 		it("[invalid/invalid.json] Query missing WHERE", checkQuery);
 		it("[invalid/options.json] Query missing OPTIONS", checkQuery);

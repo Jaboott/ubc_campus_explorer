@@ -8,6 +8,7 @@ import {
 } from "./IInsightFacade";
 import { idValidator, readContent, readExistingDataset } from "../util/helpers";
 import Section from "./Section";
+import { queryValidator, handleOptions, handleWhere } from "../util/queryHandler";
 
 const fs = require("fs-extra");
 
@@ -120,8 +121,10 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public async performQuery(query: unknown): Promise<InsightResult[]> {
-		// TODO: Remove this once you implement the methods!
-		throw new Error(`InsightFacadeImpl::performQuery() is unimplemented! - query=${query};`);
+		// const queryObject = Object(query);
+		queryValidator(query);
+		const resultSoFar = handleWhere(query);
+		return handleOptions(query, resultSoFar);
 	}
 
 	public async listDatasets(): Promise<InsightDataset[]> {

@@ -53,12 +53,12 @@ export default class Section {
 	// can use this when converting object to an instance when querying
 	public static objectToInstance(obj: any): Section {
 		return new Section(
-			obj.id,
+			String(obj.id), // id is a number in the given data
 			obj.Course,
 			obj.Title,
 			obj.Professor,
 			obj.Subject,
-			obj.Year,
+			Number(obj.Year), // year is a string in the given data
 			obj.Avg,
 			obj.Pass,
 			obj.Fail,
