@@ -3,7 +3,7 @@
 	"input": {
 		"WHERE": {
 			"GT": {
-				"sections_avg": 97
+				"notFound_avg": 97
 			}
 		},
 		"OPTIONS": {
@@ -11,7 +11,7 @@
 				"notFound_dept",
 				"notFound_avg"
 			],
-			"ORDER": "sections_avg"
+			"ORDER": "notFound_avg"
 		}
 	},
 	"errorExpected": true,
