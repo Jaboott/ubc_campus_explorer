@@ -190,28 +190,34 @@ function queryMapper(param: string, content: any, resultSoFar: any): any {
 		case "EQ":
 			return applyComparator(param, content, resultSoFar);
 		case "IS":
-			break;
+			return applyIs(content.IS, resultSoFar);
 		case "AND":
 			// loop over each comparison inside the AND clause
 			content.AND.forEach((clause: any) => {
 				for (const key in clause) {
 					const tempResult = queryMapper(key, clause, resultSoFar);
-					// check if each item is in both tempResult and result - but seems to be a bit slow(?
-					result = result.filter((item) => tempResult.includes(item));
+					// check if each section is in both tempResult and result - but seems to be a bit slow(?
+					result = result.filter((section) => tempResult.includes(section));
 				}
 			});
 			return result;
-		case "OR":
-			break;
+		case "OR": {
+			const resultOr = new Set<any>(); // use a set because it does not allow duplicate
+			content.OR.forEach((clause: any) => {
+				for (const key in clause) {
+					const tempResult = queryMapper(key, clause, resultSoFar);
+					tempResult.forEach((section: any) => resultOr.add(section));
+				}
+			});
+			return Array.from(resultOr); // convert set to array
+		}
 		case "NOT": {
 			const comparator = Object.keys(content.NOT)[0];
 			const tempResult = queryMapper(comparator, content.NOT, resultSoFar);
-			// negation - only keep those items from result that do NOT appear in tempResult.
-			result = result.filter((item) => !tempResult.includes(item));
+			// negation - only keep those section from result that do NOT appear in tempResult.
+			result = result.filter((section) => !tempResult.includes(section));
 			return result;
 		}
-		default:
-			return;
 	}
 }
 
@@ -231,30 +237,34 @@ export function handleWhere(content: any): any {
 }
 
 function applyComparator(comparator: string, content: Record<string, number>, result: any): any {
-	let key: string;
-	let keyToCompare: string;
-	let value: number;
+	const key = Object.keys(content[comparator])[0];
+	const keyToCompare = key.split("_").slice(1).join("_"); // chatgpt generated to extract the string after underscore
+	datasetValidator(key);
+	const value = Object.values(content[comparator])[0];
 	switch (comparator) {
-		// this could probably be written in a better way
 		case "GT":
-			key = Object.keys(content.GT)[0];
-			keyToCompare = key.split("_").slice(1).join("_"); // chatgpt generated to extract the string behind underscore
-			datasetValidator(key);
-			value = Object.values(content.GT)[0];
-			return result.filter((item: any) => item[keyToCompare] > value);
+			return result.filter((section: any) => section[keyToCompare] > value);
 		case "LT":
-			key = Object.keys(content.LT)[0];
-			keyToCompare = key.split("_").slice(1).join("_"); // chatgpt generated to extract the string behind underscore
-			datasetValidator(key);
-			value = Object.values(content.LT)[0];
-			return result.filter((item: any) => item[keyToCompare] < value);
+			return result.filter((section: any) => section[keyToCompare] < value);
 		case "EQ":
-			key = Object.keys(content.EQ)[0];
-			keyToCompare = key.split("_").slice(1).join("_"); // chatgpt generated to extract the string behind underscore
-			datasetValidator(key);
-			value = Object.values(content.EQ)[0];
-			return result.filter((item: any) => item[keyToCompare] === value);
+			return result.filter((section: any) => section[keyToCompare] === value);
 	}
+}
+
+function applyIs(content: Record<string, string>, result: any): any {
+	const key = Object.keys(content)[0];
+	const keyToCompare = key.split("_").slice(1).join("_"); // chatgpt generated to extract the string after underscore
+	datasetValidator(key);
+	const inputString = content[key];
+
+	// chatgpt generated regex pattern (convert the pattern into a regex for wildcard matching)
+	const regexPattern = "^" + inputString.replace(/\*/g, ".*") + "$";
+	const regex = new RegExp(regexPattern);
+
+	// filter the result that matches the wildcard
+	return result.filter((section: any) => {
+		return regex.test(section[keyToCompare]); // return true if regex matches string else return false
+	});
 }
 
 export function handleOptions(content: any, resultSoFar: any): any {

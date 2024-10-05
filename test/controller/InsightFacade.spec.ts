@@ -363,7 +363,7 @@ describe("InsightFacade", function () {
 		it("[valid/negationString.json] SELECT fail, audit WHERE NOT dept IS *", checkQuery);
 		it("[valid/anyOrder.json] SELECT dept, avg WHERE avg = 97", checkQuery);
 		it("[valid/emptyResult.json] SELECT dept, avg WHERE year = 0", checkQuery);
-		it("[valid/andStringNumber.json] SELECT instructor, title WHERE dept IS *or AND year = 1900", checkQuery);
+		it("[valid/andStringNumber.json] SELECT instructor and uuid WHERE dept IS z* AND year = 2015", checkQuery);
 		it("[invalid/resultTooLarge.json] Result too large error", checkQuery);
 		it("[invalid/invalid.json] Query missing WHERE", checkQuery);
 		it("[invalid/options.json] Query missing OPTIONS", checkQuery);

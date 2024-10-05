@@ -1,29 +1,36 @@
 {
-	"title": "SELECT instructor, title WHERE dept IS *or AND year = 1900",
+	"title": "SELECT instructor and uuid WHERE dept IS z* AND year = 2015",
 	"input": {
 		"WHERE": {
 			"AND": [
 				{
 					"IS": {
-						"sections_dept": "*or"
+						"sections_dept": "z*"
 					}
 				},
 				{
 					"EQ": {
-						"sections_year": 1900
+						"sections_year": 2015
 					}
 				}
 			]
 		},
 		"OPTIONS": {
-			"COLUMNS": ["sections_instructor", "sections_title"],
-			"ORDER": "sections_instructor"
+			"COLUMNS": [
+				"sections_instructor",
+				"sections_uuid"
+			]
 		}
 	},
 	"errorExpected": false,
 	"expected": [
-		{ "sections_instructor": "", "sections_title": "ecolgcl restortn" },
-		{ "sections_instructor": "", "sections_title": "urbn frst welbng" },
-		{ "sections_instructor": "", "sections_title": "green the city" }
+		{
+			"sections_instructor": "matthews, philip",
+			"sections_uuid": "5075"
+		},
+		{
+			"sections_instructor": "",
+			"sections_uuid": "5076"
+		}
 	]
 }
