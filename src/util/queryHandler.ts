@@ -1,4 +1,4 @@
-import { InsightError, ResultTooLargeError } from "../controller/IInsightFacade";
+import { InsightError, InsightResult, ResultTooLargeError } from "../controller/IInsightFacade";
 import * as fs from "fs";
 
 const MAX_RESULT = 5000;
@@ -182,7 +182,7 @@ function datasetValidator(dataToCheck: string): void {
 	}
 }
 
-function queryMapper(param: string, content: any, resultSoFar: any): any {
+function queryMapper(param: string, content: any, resultSoFar: InsightResult[]): any {
 	let result: any[] = resultSoFar;
 	switch (param) {
 		case "GT":
@@ -194,35 +194,29 @@ function queryMapper(param: string, content: any, resultSoFar: any): any {
 		case "AND":
 			// loop over each comparison inside the AND clause
 			content.AND.forEach((clause: any) => {
-				for (const key in clause) {
-					const tempResult = queryMapper(key, clause, resultSoFar);
-					// check if each section is in both tempResult and result - but seems to be a bit slow(?
-					result = result.filter((section) => tempResult.includes(section));
-				}
+				const tempSet = new Set(queryMapper(Object.keys(clause)[0], clause, resultSoFar)); // Use a set for O(1) lookup
+				result = result.filter((section) => tempSet.has(section)); // O(n) filter with O(1) set lookup
 			});
 			return result;
 		case "OR": {
 			const resultOr = new Set<any>(); // use a set because it does not allow duplicate
 			content.OR.forEach((clause: any) => {
-				for (const key in clause) {
-					const tempResult = queryMapper(key, clause, resultSoFar);
-					tempResult.forEach((section: any) => resultOr.add(section));
-				}
+				const tempResult = queryMapper(Object.keys(clause)[0], clause, resultSoFar);
+				tempResult.forEach((section: any) => resultOr.add(section));
 			});
 			return Array.from(resultOr); // convert set to array
 		}
 		case "NOT": {
 			const comparator = Object.keys(content.NOT)[0];
-			const tempResult = queryMapper(comparator, content.NOT, resultSoFar);
-			// negation - only keep those section from result that do NOT appear in tempResult.
-			result = result.filter((section) => !tempResult.includes(section));
+			const tempSet = new Set(queryMapper(comparator, content.NOT, resultSoFar));
+			result = result.filter((section) => !tempSet.has(section)); // negation - only keep those section from result that do NOT appear in tempResult
 			return result;
 		}
 	}
 }
 
 // get all rows from a dataset and filter using comparator if necessary
-export function handleWhere(content: any): any {
+export function handleWhere(content: any): InsightResult[] {
 	getDataset(content);
 	const rawData = fs.readFileSync(`data/${datasetName}.json`, "utf-8");
 	let resultSoFar = JSON.parse(rawData);
@@ -230,13 +224,13 @@ export function handleWhere(content: any): any {
 	for (const param in content.WHERE) {
 		resultSoFar = queryMapper(param, content.WHERE, resultSoFar);
 	}
-	if (resultSoFar?.length > MAX_RESULT) {
+	if (resultSoFar.length > MAX_RESULT) {
 		throw new ResultTooLargeError();
 	}
 	return resultSoFar;
 }
 
-function applyComparator(comparator: string, content: Record<string, number>, result: any): any {
+function applyComparator(comparator: string, content: Record<string, number>, result: InsightResult[]): any {
 	const key = Object.keys(content[comparator])[0];
 	const keyToCompare = key.split("_").slice(1).join("_"); // chatgpt generated to extract the string after underscore
 	datasetValidator(key);
@@ -251,7 +245,7 @@ function applyComparator(comparator: string, content: Record<string, number>, re
 	}
 }
 
-function applyIs(content: Record<string, string>, result: any): any {
+function applyIs(content: Record<string, string>, result: InsightResult[]): InsightResult[] {
 	const key = Object.keys(content)[0];
 	const keyToCompare = key.split("_").slice(1).join("_"); // chatgpt generated to extract the string after underscore
 	datasetValidator(key);
@@ -267,18 +261,18 @@ function applyIs(content: Record<string, string>, result: any): any {
 	});
 }
 
-export function handleOptions(content: any, resultSoFar: any): any {
+export function handleOptions(content: any, resultSoFar: InsightResult[]): InsightResult[] {
 	const contentObject = content as Content;
-	let result = selectColumns(contentObject?.OPTIONS?.COLUMNS, resultSoFar);
-	if (contentObject?.OPTIONS?.ORDER) {
+	let result = selectColumns(contentObject.OPTIONS.COLUMNS, resultSoFar);
+	if (contentObject.OPTIONS?.ORDER) {
 		result = applyOrder(contentObject.OPTIONS.ORDER, result);
 	}
 	return result;
 }
 
-function selectColumns(columns: string[], resultSoFar: any): any {
+function selectColumns(columns: string[], resultSoFar: InsightResult[]): InsightResult[] {
 	// Map through the resultSoFar to create a new array with only the selected columns.
-	return resultSoFar?.map((item: any) => {
+	return resultSoFar.map((item: any) => {
 		const selectedResult: Record<string, any> = {};
 		// loop through the column array
 		columns.forEach((column) => {
@@ -291,7 +285,7 @@ function selectColumns(columns: string[], resultSoFar: any): any {
 }
 
 // source https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
-function applyOrder(order: string, result: any): any {
+function applyOrder(order: string, result: InsightResult[]): InsightResult[] {
 	return result.sort((a: any, b: any) => {
 		if (a[order] < b[order]) {
 			return -1;
