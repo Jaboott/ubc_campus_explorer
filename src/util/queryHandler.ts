@@ -1,4 +1,4 @@
-import { InsightError, InsightResult, ResultTooLargeError } from "../controller/IInsightFacade";
+import { InsightDatasetKind, InsightError, InsightResult, ResultTooLargeError } from "../controller/IInsightFacade";
 import * as fs from "fs";
 
 const MAX_RESULT = 5000;
@@ -166,11 +166,13 @@ function optionsValidator(options: OPTIONS): void {
 	}
 }
 
-function getDataset(content: Content): void {
+function getDataset(content: any, existingDataset: Map<string, InsightDatasetKind>): void {
+	content as Content;
 	const regex = new RegExp(/^([^_]+)/); // chatgpt generated regex expression
 	const match = content.OPTIONS.COLUMNS[0].match(regex); // get the dataset used in columns
-	if (!datasetName) {
-		datasetName = match ? match[1] : ""; // set the global variable
+	datasetName = match ? match[1] : ""; // set the global variable
+	if (!existingDataset.has(datasetName)) {
+		throw new InsightError("Dataset not found");
 	}
 }
 
@@ -216,8 +218,8 @@ function queryMapper(param: string, content: any, resultSoFar: InsightResult[]):
 }
 
 // get all rows from a dataset and filter using comparator if necessary
-export function handleWhere(content: any): InsightResult[] {
-	getDataset(content);
+export function handleWhere(content: any, existingDataset: Map<string, InsightDatasetKind>): InsightResult[] {
+	getDataset(content, existingDataset);
 	const rawData = fs.readFileSync(`data/${datasetName}.json`, "utf-8");
 	let resultSoFar = JSON.parse(rawData);
 	content as Content;
