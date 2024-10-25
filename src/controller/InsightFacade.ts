@@ -56,7 +56,7 @@ export default class InsightFacade implements IInsightFacade {
 		const path = this.DATA_DIR + id + ".json";
 		await fs.ensureDir(this.DATA_DIR);
 
-		// write to disk after coverting all data
+		// write to disk after converting all data
 		await fs.writeJSON(path, allObjects);
 		// keep track of the id (and kind for list dataset)
 		this.existingDataset.set(id, kind);
