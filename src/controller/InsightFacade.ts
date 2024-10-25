@@ -77,14 +77,7 @@ export default class InsightFacade implements IInsightFacade {
 		// keep track of the id (and kind for list dataset)
 		this.existingDataset.set(id, kind);
 		// Updating the existingDataset onto disk
-		const existingDatasetJson = Object.fromEntries(
-			// Making an array of [[key, value], [key2, value2]]
-			Array.from(this.existingDataset.entries()).map(([key, value]) => {
-				// convert value as string version of InsightDatasetKind
-				return [key, value === InsightDatasetKind.Sections ? "sections" : "rooms"];
-			})
-		);
-		await fs.writeJSON(this.DATA_DIR + "existingDataset.json", existingDatasetJson);
+		await this.updateDisk();
 		// return list of id
 		return Array.from(this.existingDataset.keys());
 	}
@@ -104,20 +97,24 @@ export default class InsightFacade implements IInsightFacade {
 		try {
 			await fs.remove(path);
 			this.existingDataset.delete(id);
-
-			// Recreate json with modified existingDataset
-			const existingDatasetJson = Object.fromEntries(
-				Array.from(this.existingDataset.entries()).map(([key, value]) => {
-					// convert value as string version of InsightDatasetKind
-					return [key, value === InsightDatasetKind.Sections ? "sections" : "rooms"];
-				})
-			);
-			// save changes onto disk
-			await fs.writeJSON(this.DATA_DIR + "existingDataset.json", existingDatasetJson);
+			await this.updateDisk();
 			return id;
 		} catch (err) {
 			throw new InsightError(err instanceof Error ? err.message : String(err)); // chat gpt
 		}
+	}
+
+	private async updateDisk(): Promise<void> {
+		// Recreate json with modified existingDataset
+		const existingDatasetJson = Object.fromEntries(
+			// Making an array of [[key, value], [key2, value2]]
+			Array.from(this.existingDataset.entries()).map(([key, value]) => {
+				// convert value as string version of InsightDatasetKind
+				return [key, value === InsightDatasetKind.Sections ? "sections" : "rooms"];
+			})
+		);
+		// save changes onto disk
+		await fs.writeJSON(this.DATA_DIR + "existingDataset.json", existingDatasetJson);
 	}
 
 	public async performQuery(query: unknown): Promise<InsightResult[]> {
