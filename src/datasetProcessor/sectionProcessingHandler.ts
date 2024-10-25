@@ -25,7 +25,7 @@ export function idValidator(id: string): boolean {
 	return true;
 }
 
-export async function readContent(content: string): Promise<any[]> {
+export async function readSection(content: string): Promise<any[]> {
 	const zipFile = await fileValidator(content);
 	const allPromises: Promise<any>[] = [];
 
