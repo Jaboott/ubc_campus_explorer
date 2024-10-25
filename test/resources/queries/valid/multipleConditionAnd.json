@@ -1,0 +1,50 @@
+{
+    "title": "SELECT dept, avg WHERE 97 < avg < 97.3 AND dept IS m*",
+    "input": {
+        "WHERE": {
+            "AND": [
+                {
+                    "GT": {
+                        "sections_avg": 97
+                    }
+                },
+                {
+                    "LT": {
+                        "sections_avg": 97.3
+                    }
+                },
+                {
+                    "IS": {
+                        "sections_dept": "m*"
+                    }
+                }
+            ]
+        },
+        "OPTIONS": {
+            "COLUMNS": [
+                "sections_dept",
+                "sections_avg"
+            ],
+            "ORDER": "sections_avg"
+        }
+    },
+    "errorExpected": false,
+    "expected": [
+        {
+            "sections_dept": "math",
+            "sections_avg": 97.09
+        },
+        {
+            "sections_dept": "math",
+            "sections_avg": 97.09
+        },
+        {
+            "sections_dept": "math",
+            "sections_avg": 97.25
+        },
+        {
+            "sections_dept": "math",
+            "sections_avg": 97.25
+        }
+    ]
+}
