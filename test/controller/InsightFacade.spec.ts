@@ -27,13 +27,11 @@ describe("InsightFacade", function () {
 	// Declare datasets used in tests. You should add more datasets like this!
 	let sectionOne: string;
 	let sections: string;
-	let ubcRooms: string; // C2
 
 	before(async function () {
 		// This block runs once and loads the datasets.
 		sections = await getContentFromArchives("pair.zip");
 		sectionOne = await getContentFromArchives("oneCourse.zip");
-		ubcRooms = await getContentFromArchives("campus.zip"); // C2
 
 		// Just in case there is anything hanging around from a previous run of the test suite
 		await clearDisk();
@@ -400,8 +398,38 @@ describe("InsightFacade", function () {
 		it("[invalid/isNotObject.json] Query with IS that is not an object", checkQuery);
 		it("[invalid/gtNotObject.json] Query with GT that is not an object", checkQuery);
 	});
+});
 
-	describe("PerformQueryRoomDataset", function () {
+describe("InsightFacade Tests for C2 Features", function () {
+	let facade: IInsightFacade;
+
+	// Declare datasets used in tests. You should add more datasets like this!
+	let ubcRooms: string; // C2
+
+	before(async function () {
+		// This block runs once and loads the datasets.
+		ubcRooms = await getContentFromArchives("campus.zip"); // C2
+
+		// Just in case there is anything hanging around from a previous run of the test suite
+		await clearDisk();
+	});
+
+	describe("AddDataset (RoomDataset)", function () {
+		beforeEach(function () {
+			facade = new InsightFacade();
+		});
+
+		afterEach(async function () {
+			await clearDisk();
+		});
+
+		it("should successfully add a dataset", function () {
+			const result = facade.addDataset("ubc", ubcRooms, InsightDatasetKind.Rooms);
+			return expect(result).to.eventually.have.members(["ubc"]);
+		});
+	});
+
+	describe("PerformQuery (RoomDataset)", function () {
 		async function checkQuery(this: Mocha.Context): Promise<any> {
 			if (!this.test) {
 				throw new Error(
