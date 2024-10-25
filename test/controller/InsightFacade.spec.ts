@@ -27,11 +27,13 @@ describe("InsightFacade", function () {
 	// Declare datasets used in tests. You should add more datasets like this!
 	let sectionOne: string;
 	let sections: string;
+	let ubcRooms: string; // C2
 
 	before(async function () {
 		// This block runs once and loads the datasets.
 		sections = await getContentFromArchives("pair.zip");
 		sectionOne = await getContentFromArchives("oneCourse.zip");
+		ubcRooms = await getContentFromArchives("campus.zip"); // C2
 
 		// Just in case there is anything hanging around from a previous run of the test suite
 		await clearDisk();
@@ -288,7 +290,7 @@ describe("InsightFacade", function () {
 		});
 	});
 
-	describe.only("PerformQuery", function () {
+	describe("PerformQuery", function () {
 		/**
 		 * Loads the TestQuery specified in the test name and asserts the behaviour of performQuery.
 		 *
@@ -397,5 +399,59 @@ describe("InsightFacade", function () {
 		it("[invalid/optionKey.json] Query with an invalid key in OPTIONS (LT inside OPTIONS)", checkQuery);
 		it("[invalid/isNotObject.json] Query with IS that is not an object", checkQuery);
 		it("[invalid/gtNotObject.json] Query with GT that is not an object", checkQuery);
+	});
+
+	describe("PerformQueryRoomDataset", function () {
+		async function checkQuery(this: Mocha.Context): Promise<any> {
+			if (!this.test) {
+				throw new Error(
+					"Invalid call to checkQuery." +
+						"Usage: 'checkQuery' must be passed as the second parameter of Mocha's it(..) function." +
+						"Do not invoke the function directly."
+				);
+			}
+			// Destructuring assignment to reduce property accesses
+			const { input, expected, errorExpected } = await loadTestQuery(this.test.title);
+			let result: InsightResult[];
+			try {
+				result = await facade.performQuery(input);
+			} catch (err) {
+				if (!errorExpected) {
+					expect.fail(`performQuery threw unexpected error: ${err}`);
+				}
+				// TODO: replace with your assertions
+				// If performQuery() is expected to reject, expected will be a string that represents the error type.
+				if (err instanceof Error) {
+					return expect(err.constructor.name).to.equal(expected);
+				}
+				expect.fail(`should thrown error`);
+			}
+			if (errorExpected) {
+				expect.fail(`performQuery resolved when it should have rejected with ${expected}`);
+			}
+			return expect(result).to.have.deep.members(expected); // TODO: replace with your assertions
+		}
+
+		before(async function () {
+			facade = new InsightFacade();
+
+			// Add the datasets to InsightFacade once.
+			// Will *fail* if there is a problem reading ANY dataset.
+			const loadDatasetPromises: Promise<string[]>[] = [
+				facade.addDataset("ubcCampus", ubcRooms, InsightDatasetKind.Rooms),
+			];
+
+			try {
+				await Promise.all(loadDatasetPromises);
+			} catch (err) {
+				throw new Error(`In PerformQuery Before hook, dataset(s) failed to be added. \n${err}`);
+			}
+		});
+
+		after(async function () {
+			await clearDisk();
+		});
+
+		it("[valid/rqWithAggregation.json] Room Query with GROUP + APPLY", checkQuery);
 	});
 });
