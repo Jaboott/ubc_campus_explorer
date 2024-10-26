@@ -364,6 +364,12 @@ describe("InsightFacade", function () {
 		it("[valid/anyOrder.json] SELECT dept, avg WHERE avg = 97", checkQuery);
 		it("[valid/emptyResult.json] SELECT dept, avg WHERE year = 0", checkQuery);
 		it("[valid/andStringNumber.json] SELECT instructor and uuid WHERE dept IS z* AND year = 2015", checkQuery);
+		it("[valid/ascSort.json] SELECT dept, avg WHERE avg > 97 ORDER by avg ASC", checkQuery);
+		it("[valid/descSort.json] SELECT dept, avg WHERE avg > 97 ORDER by avg DESC", checkQuery);
+		it(
+			"[valid/sortMultipleKey.json] SELECT * WHERE avg > 99 ORDER BY sections_avg DESC, sections_year DESC",
+			checkQuery
+		);
 		it("[invalid/resultTooLarge.json] Result too large error", checkQuery);
 		it("[invalid/invalid.json] Query missing WHERE", checkQuery);
 		it("[invalid/options.json] Query missing OPTIONS", checkQuery);
@@ -385,6 +391,9 @@ describe("InsightFacade", function () {
 		);
 		it("[invalid/noColumns.json] Query that does not have COLUMNS", checkQuery);
 		it("[invalid/emptyColumn.json] Query with empty COLUMNS array", checkQuery);
+		it("[invalid/emptyOrderKeys.json] Query with empty order keys array", checkQuery);
+		it("[invalid/missingOrderKeys.json] Query with missing order keys array", checkQuery);
+		it("[invalid/missingOrderDir.json] Query with missing order dir key", checkQuery);
 		it("[invalid/sComparison.json] Query that compare a mkey using SCOMPARISON", checkQuery);
 		it("[invalid/mComparison.json] Query that compare a skey using MCOMPARISON", checkQuery);
 		it("[invalid/emptyAnd.json] Query with empty AND array", checkQuery);
