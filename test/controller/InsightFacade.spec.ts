@@ -410,7 +410,7 @@ describe("InsightFacade", function () {
 	});
 });
 
-describe("InsightFacade Tests for C2 Features", function () {
+describe.only("InsightFacade Tests for C2 Features", function () {
 	let facade: IInsightFacade;
 
 	// Declare datasets used in tests. You should add more datasets like this!
@@ -429,7 +429,7 @@ describe("InsightFacade Tests for C2 Features", function () {
 		await clearDisk();
 	});
 
-	describe.only("AddDataset (RoomDataset)", function () {
+	describe("AddDataset (RoomDataset)", function () {
 		beforeEach(function () {
 			facade = new InsightFacade();
 		});
@@ -514,6 +514,11 @@ describe("InsightFacade Tests for C2 Features", function () {
 			await clearDisk();
 		});
 
-		it("[valid/rqWithAggregation.json] Room Query with GROUP + APPLY", checkQuery);
+		it("[valid/rqAllKeys.json] SELECT * WHERE room_seats < 7", checkQuery);
+		it("[valid/rqBasic.json] SELECT rooms_shortname, rooms_fullname, rooms_seats WHERE rooms_seats > 300", checkQuery);
+		it(
+			"[valid/rqWithAggregation.json] SELECT rooms_shortname, maxSeats WHERE rooms_furniture IS Tables AND rooms_seats > 300 GROUP BY rooms_shortname",
+			checkQuery
+		);
 	});
 });
