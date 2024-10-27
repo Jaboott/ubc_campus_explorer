@@ -1,0 +1,26 @@
+{
+  "title": "Room Query using invalid keys in OPTIONS",
+  "input": {
+    "WHERE": {
+      "LT": {
+        "rooms_seats": 7
+      }
+    },
+    "OPTIONS": {
+      "COLUMNS": [
+        "rooms_avg",
+        "rooms_pass",
+        "rooms_fail",
+        "rooms_audit",
+        "rooms_year",
+        "rooms_dept",
+        "rooms_id",
+        "rooms_instructor",
+        "rooms_title",
+        "rooms_uuid"
+      ]
+    }
+  },
+  "errorExpected": true,
+  "expected": "InsightError"
+}

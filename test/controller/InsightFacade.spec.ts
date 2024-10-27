@@ -520,5 +520,7 @@ describe.only("InsightFacade Tests for C2 Features", function () {
 			"[valid/rqWithAggregation.json] SELECT rooms_shortname, maxSeats WHERE rooms_furniture IS Tables AND rooms_seats > 300 GROUP BY rooms_shortname",
 			checkQuery
 		);
+		it("[invalid/rqInvalidWhereKey.json] Room query using a Section key in WHERE clause", checkQuery);
+		it("[invalid/rqInvalidOptionsKeys.json] Room query using Section keys in OPTIONS", checkQuery);
 	});
 });
