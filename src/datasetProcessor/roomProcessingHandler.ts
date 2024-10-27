@@ -1,6 +1,8 @@
 import JSZip from "jszip";
 import * as parse5 from "parse5";
 import { InsightError } from "../controller/IInsightFacade";
+import Building from "../controller/Building";
+import { fetchLocation } from "./fetchLocation";
 
 export async function readRoom(content: string): Promise<any> {
 	const zipFile = await JSZip.loadAsync(content, { base64: true });
@@ -15,14 +17,74 @@ export async function readRoom(content: string): Promise<any> {
 
 	// html table with the rooms
 	const table = findBuildingTable(htmFile);
-	return getRoomsFromTable(table);
+	const buildings = await getBuildingsFromTable(table);
+
+	return buildings;
 }
 
-// TODO
-function getRoomsFromTable(table: any): any[] {
-	console.log(table);
+// TODO still need to turn buildings into Rooms
+async function getBuildingsFromTable(table: any): Promise<any[]> {
+	const tbodyNode = table.childNodes.find((child: any) => child.nodeName === "tbody");
+	const tableRows = tbodyNode.childNodes.filter((node: any) => node.nodeName === "tr");
+	// creating an array of promises that holds building information
+	const buildingPromises = tableRows.map(async (tableRow: any) => {
+		return getBuildingInformation(tableRow);
+	});
 
-	return new Array();
+	let buildings = await Promise.all(buildingPromises);
+	// filtering the buildings that's null
+	buildings = buildings.filter((building: any) => building !== null);
+	return buildings;
+}
+
+// This function is making the assumption that such fields will either only appear once or not appear
+async function getBuildingInformation(tableRow: any): Promise<Building | null> {
+	// filtering tableRow to only include the ones that's td
+	const cells = tableRow.childNodes.filter((node: any) => node.nodeName === "td");
+	const fieldsMap: Record<string, any> = {
+		"views-field views-field-field-building-code": null,
+		"views-field views-field-title": null,
+		"views-field views-field-field-building-address": null,
+	};
+
+	// Adding the td to fieldsMap if field is found in the class attribute
+	for (const td of cells) {
+		const classAttr = td.attrs.find((attr: any) => attr.name === "class");
+		if (classAttr && classAttr.value in fieldsMap) {
+			fieldsMap[classAttr.value] = td;
+			// Add the <a> instead if class attribute is views-field views-field-title
+			if (classAttr.value === "views-field views-field-title") {
+				fieldsMap[classAttr.value] = td.childNodes.find((child: any) => child.nodeName === "a");
+			}
+		}
+	}
+
+	// Return null if the row does not include all required fields
+	if (!Object.values(fieldsMap).every((value: any) => value !== null)) {
+		return null;
+	}
+
+	const fullname = getText(fieldsMap["views-field views-field-title"]);
+	const shortname = getText(fieldsMap["views-field views-field-field-building-code"]);
+	const address = getText(fieldsMap["views-field views-field-field-building-address"]);
+	const href = fieldsMap["views-field views-field-title"].attrs.find((attr: any) => attr.name === "href").value;
+	const coordinates = await fetchLocation(address);
+	let lat, lon;
+	// TODO not sure what to do when fails to fetch geolocation
+	if (coordinates instanceof Array && coordinates[0] && coordinates[1]) {
+		lat = coordinates[0];
+		lon = coordinates[1];
+	} else {
+		console.log(coordinates);
+		return null;
+	}
+
+	return new Building(fullname, shortname, address, lat, lon, href);
+}
+
+function getText(td: any): string {
+	const text = td.childNodes.find((child: any) => child.nodeName === "#text");
+	return text.value.trim();
 }
 
 // My understanding is that there's only 1 table that's valid. It's identified by having the class = views-field
