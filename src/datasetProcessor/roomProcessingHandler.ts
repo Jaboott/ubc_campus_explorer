@@ -17,8 +17,12 @@ export async function readRoom(content: string): Promise<any> {
 
 	// html table with the rooms
 	const table = findBuildingTable(htmFile);
-	const buildings = await getBuildingsFromTable(table);
 
+	if (!table) {
+		throw new InsightError("No valid table found");
+	}
+
+	const buildings = await getBuildingsFromTable(table);
 	return buildings;
 }
 
@@ -91,7 +95,7 @@ function getText(td: any): string {
 // This could be wrong
 function findBuildingTable(node: any): any {
 	if (node.nodeName === "table" && checkTable(node)) {
-		return node as Document;
+		return node;
 	}
 
 	// if node contains child
