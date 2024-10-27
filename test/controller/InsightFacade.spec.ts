@@ -1,3 +1,4 @@
+// import { get } from "http";
 import {
 	IInsightFacade,
 	InsightDatasetKind,
@@ -413,17 +414,22 @@ describe("InsightFacade Tests for C2 Features", function () {
 	let facade: IInsightFacade;
 
 	// Declare datasets used in tests. You should add more datasets like this!
-	let ubcRooms: string; // C2
+	let ubcRooms: string;
+	let noRooms: string;
+	let noIndex: string;
+	let emptyIndex: string;
 
 	before(async function () {
 		// This block runs once and loads the datasets.
-		ubcRooms = await getContentFromArchives("campus.zip"); // C2
-
+		ubcRooms = await getContentFromArchives("campus.zip");
+		noRooms = await getContentFromArchives("campusNoRooms.zip");
+		noIndex = await getContentFromArchives("campusNoIndex.zip");
+		emptyIndex = await getContentFromArchives("campusEmptyIndex.zip");
 		// Just in case there is anything hanging around from a previous run of the test suite
 		await clearDisk();
 	});
 
-	describe("AddDataset (RoomDataset)", function () {
+	describe.only("AddDataset (RoomDataset)", function () {
 		beforeEach(function () {
 			facade = new InsightFacade();
 		});
@@ -432,9 +438,28 @@ describe("InsightFacade Tests for C2 Features", function () {
 			await clearDisk();
 		});
 
-		it("should successfully add a dataset", function () {
+		it("should successfully add a room dataset", function () {
 			const result = facade.addDataset("ubc", ubcRooms, InsightDatasetKind.Rooms);
 			return expect(result).to.eventually.have.members(["ubc"]);
+		});
+
+		// reject when:
+		// invalid zip: zip does not contain a valid room, no index file
+		// invalid index: no valid building list table
+		// invalid room: room file is missing a field, invalid geolocation
+		it("should reject when zip file has no rooms", function () {
+			const result = facade.addDataset("noRooms", noRooms, InsightDatasetKind.Rooms);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should reject when room dataset is missing index file", function () {
+			const result = facade.addDataset("noIndex", noIndex, InsightDatasetKind.Rooms);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should reject when room dataset is has a index file that is empty (has no tables)", function () {
+			const result = facade.addDataset("emptyIndex", emptyIndex, InsightDatasetKind.Rooms);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
 	});
 
