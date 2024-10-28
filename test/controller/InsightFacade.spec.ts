@@ -418,6 +418,8 @@ describe.only("InsightFacade Tests for C2 Features", function () {
 	let noBuildings: string;
 	let noIndex: string;
 	let emptyIndex: string;
+	let missingRoomsTable: string;
+	let missingFields: string;
 
 	before(async function () {
 		// This block runs once and loads the datasets.
@@ -425,6 +427,8 @@ describe.only("InsightFacade Tests for C2 Features", function () {
 		noBuildings = await getContentFromArchives("campusNoBuildings.zip");
 		noIndex = await getContentFromArchives("campusNoIndex.zip");
 		emptyIndex = await getContentFromArchives("campusEmptyIndex.zip");
+		missingRoomsTable = await getContentFromArchives("simpleInvalidCampusNoRooms.zip");
+		missingFields = await getContentFromArchives("simpleInavlidCampusMissingFields.zip");
 		// Just in case there is anything hanging around from a previous run of the test suite
 		await clearDisk();
 	});
@@ -457,8 +461,18 @@ describe.only("InsightFacade Tests for C2 Features", function () {
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
 
-		it("should reject when room dataset is has a index file that is empty (has no tables)", function () {
+		it("should reject when room dataset has a blank index file (ie. index has no tables)", function () {
 			const result = facade.addDataset("emptyIndex", emptyIndex, InsightDatasetKind.Rooms);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should reject if the only building file has no rooms table (ie. the dataset does not contain at least one valid room)", function () {
+			const result = facade.addDataset("missingRoomsTable", missingRoomsTable, InsightDatasetKind.Rooms);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should reject if the only building file has a rooms table but the rooms are missing some fields (ie. the dataset does not contain at least one valid room)", function () {
+			const result = facade.addDataset("missingFields", missingFields, InsightDatasetKind.Rooms);
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
 	});
