@@ -415,14 +415,14 @@ describe.only("InsightFacade Tests for C2 Features", function () {
 
 	// Declare datasets used in tests. You should add more datasets like this!
 	let ubcRooms: string;
-	let noRooms: string;
+	let noBuildings: string;
 	let noIndex: string;
 	let emptyIndex: string;
 
 	before(async function () {
 		// This block runs once and loads the datasets.
 		ubcRooms = await getContentFromArchives("campus.zip");
-		noRooms = await getContentFromArchives("campusNoRooms.zip");
+		noBuildings = await getContentFromArchives("campusNoBuildings.zip");
 		noIndex = await getContentFromArchives("campusNoIndex.zip");
 		emptyIndex = await getContentFromArchives("campusEmptyIndex.zip");
 		// Just in case there is anything hanging around from a previous run of the test suite
@@ -447,8 +447,8 @@ describe.only("InsightFacade Tests for C2 Features", function () {
 		// invalid zip: zip does not contain a valid room, no index file
 		// invalid index: no valid building list table
 		// invalid room: room file is missing a field, invalid geolocation
-		it("should reject when zip file has no rooms", function () {
-			const result = facade.addDataset("noRooms", noRooms, InsightDatasetKind.Rooms);
+		it("should reject when zip file has no buildings (ie. no rooms)", function () {
+			const result = facade.addDataset("noBuildings", noBuildings, InsightDatasetKind.Rooms);
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
 

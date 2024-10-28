@@ -11,6 +11,16 @@ export async function readRoom(content: string): Promise<any> {
 		throw new InsightError("index.htm file not found");
 	}
 
+	// get a list of htm files (ie. buildings), not including index
+	const buildingFiles = Object.keys(zipFile.files).filter(
+		(filePath) => filePath.endsWith(".htm") && filePath !== "index.htm"
+	);
+
+	// console.log(buildingFiles);
+	if (buildingFiles.length === 0) {
+		throw new InsightError("buildings-and-classrooms folder is empty");
+	}
+
 	const htmFile = await zipFile.files["index.htm"].async("text").then((file) => {
 		return parse5.parse(file);
 	});
