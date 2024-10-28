@@ -6,7 +6,7 @@ let datasetName = "";
 
 interface OPTIONS {
 	COLUMNS: string[];
-	ORDER?: string;
+	ORDER?: string | { dir: string; keys: string[] };
 }
 
 interface FILTER {
@@ -161,8 +161,28 @@ function optionsValidator(options: OPTIONS): void {
 	}
 
 	// Checking if a field in ORDER is not in COLUMNS
-	if (options.ORDER && !options.COLUMNS.includes(options.ORDER)) {
-		throw new InsightError("ORDER key must be in OPTIONS and not in COLUMNS");
+	if (options.ORDER) {
+		if (typeof options.ORDER === "string" && !options.COLUMNS.includes(options.ORDER)) {
+			throw new InsightError("ORDER key must be in OPTIONS and also in COLUMNS");
+		} else if (typeof options.ORDER === "object") {
+			validateDir(options.ORDER, options.COLUMNS);
+		}
+	}
+}
+
+function validateDir(order: { dir: string; keys: string[] }, column: string[]): void {
+	if (!order.keys || order.keys.length === 0) {
+		throw new InsightError("ORDER must have a non-empty keys array");
+	}
+
+	if (!order.dir || (order.dir !== "UP" && order.dir !== "DOWN")) {
+		throw new InsightError("ORDER must have a valid dir key");
+	}
+
+	for (const key of order.keys) {
+		if (!column.includes(key)) {
+			throw new InsightError("All ORDER keys must be in OPTIONS and also in COLUMNS");
+		}
 	}
 }
 
@@ -286,14 +306,20 @@ function selectColumns(columns: string[], resultSoFar: InsightResult[]): Insight
 	});
 }
 
-// source https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
-function applyOrder(order: string, result: InsightResult[]): InsightResult[] {
+// reference https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
+function applyOrder(order: string | { dir: string; keys: string[] }, result: InsightResult[]): InsightResult[] {
+	const isDown = typeof order === "object" && order.dir === "DOWN";
+	// if order is just a string, covert it to an array so that we could handle it in the same way as we would with the obj
+	const keys = typeof order === "string" ? [order] : order.keys;
+
 	return result.sort((a: any, b: any) => {
-		if (a[order] < b[order]) {
-			return -1;
-		}
-		if (a[order] > b[order]) {
-			return 1;
+		for (const key of keys) {
+			if (a[key] < b[key]) {
+				return isDown ? 1 : -1;
+			}
+			if (a[key] > b[key]) {
+				return isDown ? -1 : 1;
+			}
 		}
 		return 0;
 	});
