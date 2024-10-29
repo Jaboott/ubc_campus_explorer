@@ -523,7 +523,7 @@ describe.only("InsightFacade Tests for C2 Features", function () {
 			// Add the datasets to InsightFacade once.
 			// Will *fail* if there is a problem reading ANY dataset.
 			const loadDatasetPromises: Promise<string[]>[] = [
-				facade.addDataset("ubcCampus", ubcCampus, InsightDatasetKind.Rooms),
+				facade.addDataset("rooms", ubcCampus, InsightDatasetKind.Rooms),
 			];
 
 			try {
