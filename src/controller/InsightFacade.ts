@@ -21,22 +21,6 @@ export default class InsightFacade implements IInsightFacade {
 	private existingDataset: Map<string, InsightDatasetKind>;
 	private readonly DATA_DIR = "data/"; // change back to data
 
-	// constructor() {
-	// 	const path = this.DATA_DIR + "existingDataset.json";
-	// 	// Making sure "data/" exists
-	// 	if (!fs.existsSync(this.DATA_DIR)) {
-	// 		fs.mkdirSync(this.DATA_DIR);
-	// 	}
-	// 	// Checking to see if existingDataset.json already exist
-	// 	if (fs.existsSync(path)) {
-	// 		this.existingDataset = readExistingDataset(path);
-	// 	} else {
-	// 		this.existingDataset = new Map();
-	// 		// Creating "data/existingDataset.json"
-	// 		fs.writeFileSync(path, "");
-	// 	}
-	// }
-
 	constructor() {
 		this.existingDataset = new Map();
 	}
