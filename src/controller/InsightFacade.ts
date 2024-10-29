@@ -19,7 +19,7 @@ const fs = require("fs-extra");
  */
 export default class InsightFacade implements IInsightFacade {
 	private existingDataset: Map<string, InsightDatasetKind>;
-	private readonly DATA_DIR = "datatemp/"; // change back to data
+	private readonly DATA_DIR = "data/"; // change back to data
 
 	constructor() {
 		const path = this.DATA_DIR + "existingDataset.json";
