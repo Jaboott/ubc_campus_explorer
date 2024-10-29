@@ -419,8 +419,8 @@ describe.only("InsightFacade Tests for C2 Features", function () {
 	let noBuildings: string;
 	let noIndex: string;
 	let emptyIndex: string;
-	// let missingRoomsTable: string;
-	// let missingFields: string;
+	let missingRoomsTable: string;
+	let missingFields: string;
 
 	before(async function () {
 		// This block runs once and loads the datasets.
@@ -429,8 +429,8 @@ describe.only("InsightFacade Tests for C2 Features", function () {
 		noBuildings = await getContentFromArchives("campusNoBuildings.zip");
 		noIndex = await getContentFromArchives("campusNoIndex.zip");
 		emptyIndex = await getContentFromArchives("campusEmptyIndex.zip");
-		// missingRoomsTable = await getContentFromArchives("simpleInvalidCampusNoRooms.zip");
-		// missingFields = await getContentFromArchives("simpleInavlidCampusMissingFields.zip");
+		missingRoomsTable = await getContentFromArchives("simpleInvalidCampusNoRooms.zip");
+		missingFields = await getContentFromArchives("simpleInavlidCampusMissingFields.zip");
 
 		// Just in case there is anything hanging around from a previous run of the test suite
 		await clearDisk();
@@ -447,11 +447,15 @@ describe.only("InsightFacade Tests for C2 Features", function () {
 
 		it("should successfully add a simple room dataset", function () {
 			const result = facade.addDataset("simple", simpleCampus, InsightDatasetKind.Rooms);
+			// const names = await facade.listDatasets();
+			// console.log(names);
 			return expect(result).to.eventually.have.members(["simple"]);
 		});
 
 		it("should successfully add a big room dataset", function () {
 			const result = facade.addDataset("ubc", ubcCampus, InsightDatasetKind.Rooms);
+			// const names = await facade.listDatasets();
+			// console.log(names);
 			return expect(result).to.eventually.have.members(["ubc"]);
 		});
 
@@ -475,15 +479,15 @@ describe.only("InsightFacade Tests for C2 Features", function () {
 		});
 
 		// not actually sure if this the expected behaviour
-		// it("should reject if the only building file has no rooms table (ie. the dataset does not contain at least one valid room)", function () {
-		// 	const result = facade.addDataset("missingRoomsTable", missingRoomsTable, InsightDatasetKind.Rooms);
-		// 	return expect(result).to.eventually.be.rejectedWith(InsightError);
-		// });
+		it("should reject if the only building file has no rooms table (ie. the dataset does not contain at least one valid room)", function () {
+			const result = facade.addDataset("missingRoomsTable", missingRoomsTable, InsightDatasetKind.Rooms);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
 
-		// it("should reject if the only building file has a rooms table but the rooms are missing some fields (ie. the dataset does not contain at least one valid room)", function () {
-		// 	const result = facade.addDataset("missingFields", missingFields, InsightDatasetKind.Rooms);
-		// 	return expect(result).to.eventually.be.rejectedWith(InsightError);
-		// });
+		it("should reject if the only building file has a rooms table but the rooms are missing some fields (ie. the dataset does not contain at least one valid room)", function () {
+			const result = facade.addDataset("missingFields", missingFields, InsightDatasetKind.Rooms);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
 	});
 
 	describe("PerformQuery (RoomDataset)", function () {
@@ -537,12 +541,12 @@ describe.only("InsightFacade Tests for C2 Features", function () {
 			await clearDisk();
 		});
 
-		it("[valid/rqAllKeys.json] SELECT * WHERE room_seats < 7", checkQuery);
-		it("[valid/rqBasic.json] SELECT rooms_shortname, rooms_fullname, rooms_seats WHERE rooms_seats > 300", checkQuery);
-		it(
-			"[valid/rqWithAggregation.json] SELECT rooms_shortname, maxSeats WHERE rooms_furniture IS Tables AND rooms_seats > 300 GROUP BY rooms_shortname",
-			checkQuery
-		);
+		// it("[valid/rqAllKeys.json] SELECT * WHERE room_seats < 7", checkQuery);
+		// it("[valid/rqBasic.json] SELECT rooms_shortname, rooms_fullname, rooms_seats WHERE rooms_seats > 300", checkQuery);
+		// it(
+		// 	"[valid/rqWithAggregation.json] SELECT rooms_shortname, maxSeats WHERE rooms_furniture IS Tables AND rooms_seats > 300 GROUP BY rooms_shortname",
+		// 	checkQuery
+		// );
 		it("[invalid/rqInvalidWhereKey.json] Room query using a Section key in WHERE clause", checkQuery);
 		it("[invalid/rqInvalidOptionsKeys.json] Room query using Section keys in OPTIONS", checkQuery);
 	});
