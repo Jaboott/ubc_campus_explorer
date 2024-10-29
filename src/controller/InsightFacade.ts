@@ -19,7 +19,7 @@ const fs = require("fs-extra");
  */
 export default class InsightFacade implements IInsightFacade {
 	private existingDataset: Map<string, InsightDatasetKind>;
-	private readonly DATA_DIR = "data/"; // change back to data
+	private readonly DATA_DIR = "datatemp/"; // change back to data
 
 	constructor() {
 		const path = this.DATA_DIR + "existingDataset.json";
@@ -49,7 +49,7 @@ export default class InsightFacade implements IInsightFacade {
 
 		// Throws InsightError if unexpected kind
 		const dataEntities = await readData(content, kind);
-
+		console.log(dataEntities.length);
 		const allObjects = dataToInsightKind(dataEntities, kind);
 
 		// path is "data/${id}"
