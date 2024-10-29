@@ -124,8 +124,8 @@ export default class InsightFacade implements IInsightFacade {
 	public async performQuery(query: unknown): Promise<InsightResult[]> {
 		await this.initFacade();
 		// const queryObject = Object(query);
-		queryValidator(query);
-		const resultSoFar = await handleWhere(query, this.existingDataset);
+		queryValidator(query, this.existingDataset);
+		const resultSoFar = await handleWhere(query);
 		return handleOptions(query, resultSoFar);
 	}
 
