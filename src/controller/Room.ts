@@ -1,3 +1,5 @@
+import Building from "./Building";
+
 export default class Room {
 	private readonly fullname: string;
 	private readonly shortname: string;
@@ -37,12 +39,28 @@ export default class Room {
 		this.href = href;
 	}
 
-	// public htmToInstance() {
-	//     // TODO
-	//     return new Room(
-
-	//     );
-	// }
+	public static roomFromBuilding(
+		building: Building,
+		number: string,
+		capacity: number,
+		type: string,
+		furniture: string,
+		href: string
+	): Room {
+		return new Room(
+			building.fullname,
+			building.shortname,
+			number,
+			`${building.shortname}_${number}`,
+			building.address,
+			building.lat,
+			building.lon,
+			capacity,
+			type,
+			furniture,
+			href
+		);
+	}
 
 	public instanceToObject(): object {
 		return {

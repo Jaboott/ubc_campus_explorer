@@ -2,25 +2,27 @@ import { InsightDatasetKind, InsightError } from "../controller/IInsightFacade";
 import { readSection } from "./sectionProcessingHandler";
 import { readRoom } from "./roomProcessingHandler";
 import Section from "../controller/Section";
+import Room from "../controller/Room";
+import fs from "fs";
 
 export async function readData(content: string, kind: InsightDatasetKind): Promise<any[]> {
-	let courses;
+	let dataEntities;
 
 	// A list of JSON sections or rooms
 	if (kind === InsightDatasetKind.Sections) {
-		courses = await readSection(content);
+		dataEntities = await readSection(content);
 	} else if (kind === InsightDatasetKind.Rooms) {
-		courses = await readRoom(content);
+		dataEntities = await readRoom(content);
 	} else {
 		throw new InsightError("kind should only be Room or Section");
 	}
 
 	// No valid section
-	if (courses.length === 0) {
+	if (dataEntities.length === 0) {
 		throw new InsightError("No valid data found.");
 	}
 
-	return courses;
+	return dataEntities;
 }
 
 export function dataToInsightKind(dataEntities: any[], kind: InsightDatasetKind): any[] {
@@ -31,15 +33,15 @@ export function dataToInsightKind(dataEntities: any[], kind: InsightDatasetKind)
 			continue;
 		}
 		// convert course data to section instances and store them in an array
-		let sectionObj;
+		let entityObj;
 		if (kind === InsightDatasetKind.Sections) {
 			const sections = dataEntity.map((section: any) => Section.objectToInstance(section));
-			sectionObj = sections.map((section: any) => section.instanceToObject());
+			entityObj = sections.map((section: any) => section.instanceToObject());
 		} else {
-			// TODO
-			sectionObj = null;
+			const rooms = dataEntities as Room[];
+			entityObj = rooms.map((room: any) => room.instanceToObject());
 		}
-		allObjects.push(...sectionObj);
+		allObjects.push(...entityObj);
 	}
 
 	// This is to catch when only a null dataset has been returned
@@ -48,4 +50,16 @@ export function dataToInsightKind(dataEntities: any[], kind: InsightDatasetKind)
 	}
 
 	return allObjects;
+}
+
+export function readExistingDataset(path: string): Map<string, InsightDatasetKind> {
+	const data = fs.readFileSync(path, "utf8");
+	const existingDataset = JSON.parse(data);
+	// Turn the json back to a map
+	const map = new Map(
+		Object.entries(existingDataset).map(([key, value]) => {
+			return [key, value === "section" ? InsightDatasetKind.Sections : InsightDatasetKind.Rooms];
+		})
+	);
+	return map;
 }

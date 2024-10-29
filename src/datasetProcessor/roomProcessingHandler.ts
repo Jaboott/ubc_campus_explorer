@@ -3,6 +3,7 @@ import * as parse5 from "parse5";
 import { InsightError } from "../controller/IInsightFacade";
 import Building from "../controller/Building";
 import { fetchLocation } from "./fetchLocation";
+import Room from "../controller/Room";
 
 export async function readRoom(content: string): Promise<any> {
 	const zipFile = await JSZip.loadAsync(content, { base64: true });
@@ -10,33 +11,90 @@ export async function readRoom(content: string): Promise<any> {
 	if (!Object.keys(zipFile.files).includes("index.htm")) {
 		throw new InsightError("index.htm file not found");
 	}
-
-	// get a list of htm files (ie. buildings), not including index
-	const buildingFiles = Object.keys(zipFile.files).filter(
-		(filePath) => filePath.endsWith(".htm") && filePath !== "index.htm"
-	);
-
-	// console.log(buildingFiles);
-	if (buildingFiles.length === 0) {
-		throw new InsightError("buildings-and-classrooms folder is empty");
-	}
-
 	const htmFile = await zipFile.files["index.htm"].async("text").then((file) => {
 		return parse5.parse(file);
 	});
 
 	// html table with the rooms
-	const table = findBuildingTable(htmFile);
+	const table = findTable(htmFile);
 
 	if (!table) {
 		throw new InsightError("No valid table found");
 	}
 
+	// an array of building objects
 	const buildings = await getBuildingsFromTable(table);
-	return buildings;
+	const roomPromises: Promise<Room[]>[] = [];
+	for (const building of buildings) {
+		if (!Object.keys(zipFile.files).includes(building.buildingHref)) {
+			continue;
+		}
+		const roomPromise: Promise<Room[]> = zipFile.files[building.buildingHref].async("text").then((file) => {
+			const buildingHtml = parse5.parse(file);
+			const buildingRooms: Room[] = getRoomsFromTable(building, buildingHtml);
+			return buildingRooms;
+		});
+
+		roomPromises.push(roomPromise);
+	}
+	// roomPromises is an array of Rooms arrays...
+	const rooms = await Promise.all(roomPromises).then((roomArray: Room[][]) => roomArray.flat());
+	return rooms;
 }
 
-// TODO still need to turn buildings into Rooms
+function getRoomsFromTable(building: Building, buildingHtml: any): Room[] {
+	const table = findTable(buildingHtml);
+	if (!table) {
+		return [];
+	}
+	const tbodyNode = table.childNodes.find((child: any) => child.nodeName === "tbody");
+	const tableRows = tbodyNode.childNodes.filter((node: any) => node.nodeName === "tr");
+	// creating an array of promises that holds building information
+	const rooms: Room[] = [];
+	for (const tableRow of tableRows) {
+		const room = getRoomInformation(building, tableRow);
+		if (room) {
+			rooms.push(room);
+		}
+	}
+
+	return rooms;
+}
+
+function getRoomInformation(building: Building, tableRow: any): Room | null {
+	const fieldsMap: Record<string, any> = {
+		"views-field views-field-field-room-number": null,
+		"views-field views-field-field-room-capacity": null,
+		"views-field views-field-field-room-furniture": null,
+		"views-field views-field-field-room-type": null,
+		"views-field views-field-nothing": null,
+	};
+
+	// Adding the td to fieldsMap if field is found in the class attribute
+	for (const td of tableRow.childNodes.filter((node: any) => node.nodeName === "td")) {
+		const classAttr = td.attrs.find((attr: any) => attr.name === "class");
+		if (classAttr && classAttr.value in fieldsMap) {
+			fieldsMap[classAttr.value] =
+				classAttr.value === "views-field views-field-nothing" ||
+				classAttr.value === "views-field views-field-field-room-number"
+					? td.childNodes.find((child: any) => child.nodeName === "a")
+					: td;
+		}
+	}
+
+	// Return null if the row does not include all required fields
+	if (!Object.values(fieldsMap).every((value: any) => value !== null)) {
+		return null;
+	}
+
+	const number = getText(fieldsMap["views-field views-field-field-room-number"]);
+	const capacity = Number(getText(fieldsMap["views-field views-field-field-room-capacity"]));
+	const type = getText(fieldsMap["views-field views-field-field-room-type"]);
+	const furniture = getText(fieldsMap["views-field views-field-field-room-furniture"]);
+	const href = fieldsMap["views-field views-field-nothing"].attrs.find((attr: any) => attr.name === "href").value;
+	return Room.roomFromBuilding(building, number, capacity, type, furniture, href);
+}
+
 async function getBuildingsFromTable(table: any): Promise<any[]> {
 	const tbodyNode = table.childNodes.find((child: any) => child.nodeName === "tbody");
 	const tableRows = tbodyNode.childNodes.filter((node: any) => node.nodeName === "tr");
@@ -92,8 +150,8 @@ async function getBuildingInformation(tableRow: any): Promise<Building | null> {
 		console.log(coordinates);
 		return null;
 	}
-
-	return new Building(fullname, shortname, address, lat, lon, href);
+	// regex for href given by gpt to remove leading ./
+	return new Building(fullname, shortname, address, lat, lon, href.replace(/^\.\//, ""));
 }
 
 function getText(td: any): string {
@@ -103,7 +161,7 @@ function getText(td: any): string {
 
 // My understanding is that there's only 1 table that's valid. It's identified by having the class = views-field
 // This could be wrong
-function findBuildingTable(node: any): any {
+function findTable(node: any): any {
 	if (node.nodeName === "table" && checkTable(node)) {
 		return node;
 	}
@@ -112,7 +170,7 @@ function findBuildingTable(node: any): any {
 	if (node.childNodes) {
 		// iterate through the child nodes
 		for (const child of node.childNodes) {
-			const result = findBuildingTable(child);
+			const result = findTable(child);
 			if (result) {
 				return result;
 			}

@@ -6,9 +6,9 @@ import {
 	InsightResult,
 	NotFoundError,
 } from "./IInsightFacade";
-import { idValidator, readExistingDataset } from "../datasetProcessor/sectionProcessingHandler";
+import { idValidator } from "../datasetProcessor/sectionProcessingHandler";
 import { handleOptions, handleWhere, queryValidator } from "../queryEngine/queryHandler";
-import { dataToInsightKind, readData } from "../datasetProcessor/processingHandler";
+import { dataToInsightKind, readData, readExistingDataset } from "../datasetProcessor/processingHandler";
 
 const fs = require("fs-extra");
 
@@ -48,9 +48,9 @@ export default class InsightFacade implements IInsightFacade {
 		idValidator(id);
 
 		// Throws InsightError if unexpected kind
-		const courses = await readData(content, kind);
+		const dataEntities = await readData(content, kind);
 
-		const allObjects = dataToInsightKind(courses, kind);
+		const allObjects = dataToInsightKind(dataEntities, kind);
 
 		// path is "data/${id}"
 		const path = this.DATA_DIR + id + ".json";

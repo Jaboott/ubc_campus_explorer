@@ -1,18 +1,5 @@
-import { InsightDatasetKind, InsightError } from "../controller/IInsightFacade";
+import { InsightError } from "../controller/IInsightFacade";
 import JSZip from "jszip";
-import * as fs from "fs";
-
-export function readExistingDataset(path: string): Map<string, InsightDatasetKind> {
-	const data = fs.readFileSync(path, "utf8");
-	const existingDataset = JSON.parse(data);
-	// Turn the json back to a map
-	const map = new Map(
-		Object.entries(existingDataset).map(([key, value]) => {
-			return [key, value === "section" ? InsightDatasetKind.Sections : InsightDatasetKind.Rooms];
-		})
-	);
-	return map;
-}
 
 export function idValidator(id: string): boolean {
 	// chatgpt generated regex expression
