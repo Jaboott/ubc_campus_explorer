@@ -527,7 +527,7 @@ describe.only("InsightFacade Tests for C2 Features", function () {
 			// Add the datasets to InsightFacade once.
 			// Will *fail* if there is a problem reading ANY dataset.
 			const loadDatasetPromises: Promise<string[]>[] = [
-				facade.addDataset("ubcCampus", ubcCampus, InsightDatasetKind.Rooms),
+				facade.addDataset("rooms", ubcCampus, InsightDatasetKind.Rooms),
 			];
 
 			try {
@@ -541,12 +541,12 @@ describe.only("InsightFacade Tests for C2 Features", function () {
 			await clearDisk();
 		});
 
-		// it("[valid/rqAllKeys.json] SELECT * WHERE room_seats < 7", checkQuery);
-		// it("[valid/rqBasic.json] SELECT rooms_shortname, rooms_fullname, rooms_seats WHERE rooms_seats > 300", checkQuery);
-		// it(
-		// 	"[valid/rqWithAggregation.json] SELECT rooms_shortname, maxSeats WHERE rooms_furniture IS Tables AND rooms_seats > 300 GROUP BY rooms_shortname",
-		// 	checkQuery
-		// );
+		it("[valid/rqAllKeys.json] SELECT * WHERE room_seats < 7", checkQuery);
+		it("[valid/rqBasic.json] SELECT rooms_shortname, rooms_fullname, rooms_seats WHERE rooms_seats > 300", checkQuery);
+		it(
+			"[valid/rqWithAggregation.json] SELECT rooms_shortname, maxSeats WHERE rooms_furniture IS Tables AND rooms_seats > 300 GROUP BY rooms_shortname",
+			checkQuery
+		);
 		it("[invalid/rqInvalidWhereKey.json] Room query using a Section key in WHERE clause", checkQuery);
 		it("[invalid/rqInvalidOptionsKeys.json] Room query using Section keys in OPTIONS", checkQuery);
 	});
