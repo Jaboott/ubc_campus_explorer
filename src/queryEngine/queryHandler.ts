@@ -3,10 +3,13 @@ import * as fs from "fs";
 
 const MAX_RESULT = 5000;
 let datasetName = "";
+let datasetKind = "";
+let mfield: string[] = [];
+let sfield: string[] = [];
 
 interface OPTIONS {
 	COLUMNS: string[];
-	ORDER?: string;
+	ORDER?: string | { dir: string; keys: string[] };
 }
 
 interface FILTER {
@@ -19,26 +22,34 @@ interface FILTER {
 	NOT?: FILTER;
 }
 
+interface TRANSFORMATION {
+	// TODO
+}
+
 interface Content {
 	WHERE: FILTER;
 	OPTIONS: OPTIONS;
+	TRANSFORMATION: TRANSFORMATION;
 }
 
-export function queryValidator(query: any): void {
+export function queryValidator(query: any, existingDataset: Map<string, InsightDatasetKind>): void {
 	const queryContent = query as Content;
 	const validKeys = ["WHERE", "OPTIONS"];
 	const queryKeys = Object.keys(queryContent);
 
 	// Check if query only include WHERE and OPTIONS
+	// TODO Transformation should be optional
 	if (queryKeys.length !== validKeys.length || !validKeys.every((key) => queryKeys.includes(key))) {
-		throw new InsightError("Query must include only WHERE and OPTIONS");
+		throw new InsightError("Query must include only WHERE, OPTIONS and TRANSFORMATIONS");
 	}
-
+	// moved getDataset here because datasetKind is needed to determine the valid mfield and sfield
+	// it could be written in a better way tho
+	getDataset(query, existingDataset);
+	optionsValidator(queryContent.OPTIONS);
 	// Special case when WHERE has no filter is valid
 	if (Object.keys(queryContent.WHERE).length !== 0) {
 		filterValidator(queryContent.WHERE);
 	}
-	optionsValidator(queryContent.OPTIONS);
 }
 
 function filterValidator(filter: FILTER): void {
@@ -83,8 +94,8 @@ function filterValidator(filter: FILTER): void {
 }
 
 function checkKey(key: string, type: string): void {
-	const mfield = ["avg", "pass", "fail", "audit", "year"];
-	const sfield = ["dept", "id", "instructor", "title", "uuid"];
+	// const mfield = ["avg", "pass", "fail", "audit", "year"];
+	// const sfield = ["dept", "id", "instructor", "title", "uuid"];
 	// chatgpt generated to check for string with only 1 _ and not empty or white space only
 	const keyValidator = new RegExp(/^(?=\S)(?=[^_]*_)[^_]*_[^_]*$/);
 
@@ -126,24 +137,14 @@ function checkFilter(bodyObject: Object, type: string, filterType: string): void
 }
 
 function optionsValidator(options: OPTIONS): void {
-	const mfield = ["avg", "pass", "fail", "audit", "year"];
-	const sfield = ["dept", "id", "instructor", "title", "uuid"];
+	// const mfield = ["avg", "pass", "fail", "audit", "year"];
+	// const sfield = ["dept", "id", "instructor", "title", "uuid"];
 	const optionKeys = ["COLUMNS", "ORDER"];
-	// check that OPTIONS is non-empty
-	if (Object.keys(options).length === 0) {
-		throw new InsightError("OPTIONS can't be left empty");
-	}
 
 	// Check if query has COLUMNS and does not include any invalid key
 	if (!Object.hasOwn(options, "COLUMNS") || !Object.keys(options as Object).every((key) => optionKeys.includes(key))) {
 		throw new InsightError("OPTIONS must include only COLUMNS and ORDER");
 	}
-
-	// check that COLUMNS is non-empty
-	if (options.COLUMNS.length === 0) {
-		throw new InsightError("COLUMNS must be a non-empty array");
-	}
-
 	// check that each field specified in the desired columns is valid
 	for (const column of options.COLUMNS) {
 		const id = column.split("_")[0];
@@ -161,18 +162,57 @@ function optionsValidator(options: OPTIONS): void {
 	}
 
 	// Checking if a field in ORDER is not in COLUMNS
-	if (options.ORDER && !options.COLUMNS.includes(options.ORDER)) {
-		throw new InsightError("ORDER key must be in OPTIONS and not in COLUMNS");
+	if (options.ORDER) {
+		if (typeof options.ORDER === "string" && !options.COLUMNS.includes(options.ORDER)) {
+			throw new InsightError("ORDER key must be in OPTIONS and also in COLUMNS");
+		} else if (typeof options.ORDER === "object") {
+			validateDir(options.ORDER, options.COLUMNS);
+		}
+	}
+}
+
+function validateDir(order: { dir: string; keys: string[] }, column: string[]): void {
+	if (!order.keys || order.keys.length === 0) {
+		throw new InsightError("ORDER must have a non-empty keys array");
+	}
+
+	if (!order.dir || (order.dir !== "UP" && order.dir !== "DOWN")) {
+		throw new InsightError("ORDER must have a valid dir key");
+	}
+
+	for (const key of order.keys) {
+		if (!column.includes(key)) {
+			throw new InsightError("All ORDER keys must be in OPTIONS and also in COLUMNS");
+		}
 	}
 }
 
 function getDataset(content: any, existingDataset: Map<string, InsightDatasetKind>): void {
 	content as Content;
 	const regex = new RegExp(/^([^_]+)/); // chatgpt generated regex expression
+	// had to check column is not empty before getting the datasetName
+	if (Object.keys(content.OPTIONS).length === 0) {
+		throw new InsightError("OPTIONS can't be left empty");
+	}
+	if (!Object.keys(content.OPTIONS).includes("COLUMNS")) {
+		throw new InsightError("COLUMNS must be included");
+	}
+	if (content.OPTIONS.COLUMNS.length === 0) {
+		throw new InsightError("COLUMNS must be a non-empty array");
+	}
 	const match = content.OPTIONS.COLUMNS[0].match(regex); // get the dataset used in columns
 	datasetName = match ? match[1] : ""; // set the global variable
 	if (!existingDataset.has(datasetName)) {
 		throw new InsightError("Dataset not found");
+	}
+
+	datasetKind = existingDataset.get(datasetName)!;
+	if (datasetKind === InsightDatasetKind.Sections) {
+		mfield = ["avg", "pass", "fail", "audit", "year"];
+		sfield = ["dept", "id", "instructor", "title", "uuid"];
+	} else if (datasetKind === InsightDatasetKind.Rooms) {
+		mfield = ["lat", "lon", "seats"];
+		sfield = ["fullname", "shortname", "number", "name", "address", "type", "furniture", "href"];
 	}
 }
 
@@ -218,9 +258,8 @@ function queryMapper(param: string, content: any, resultSoFar: InsightResult[]):
 }
 
 // get all rows from a dataset and filter using comparator if necessary
-export function handleWhere(content: any, existingDataset: Map<string, InsightDatasetKind>): InsightResult[] {
-	getDataset(content, existingDataset);
-	const rawData = fs.readFileSync(`data/${datasetName}.json`, "utf-8");
+export async function handleWhere(content: any): Promise<InsightResult[]> {
+	const rawData = await fs.promises.readFile(`data/${datasetName}.json`, "utf-8");
 	let resultSoFar = JSON.parse(rawData);
 	content as Content;
 	for (const param in content.WHERE) {
@@ -286,14 +325,20 @@ function selectColumns(columns: string[], resultSoFar: InsightResult[]): Insight
 	});
 }
 
-// source https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
-function applyOrder(order: string, result: InsightResult[]): InsightResult[] {
+// reference https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
+function applyOrder(order: string | { dir: string; keys: string[] }, result: InsightResult[]): InsightResult[] {
+	const isDown = typeof order === "object" && order.dir === "DOWN";
+	// if order is just a string, covert it to an array so that we could handle it in the same way as we would with the obj
+	const keys = typeof order === "string" ? [order] : order.keys;
+
 	return result.sort((a: any, b: any) => {
-		if (a[order] < b[order]) {
-			return -1;
-		}
-		if (a[order] > b[order]) {
-			return 1;
+		for (const key of keys) {
+			if (a[key] < b[key]) {
+				return isDown ? 1 : -1;
+			}
+			if (a[key] > b[key]) {
+				return isDown ? -1 : 1;
+			}
 		}
 		return 0;
 	});

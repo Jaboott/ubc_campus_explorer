@@ -1,3 +1,4 @@
+// import { get } from "http";
 import {
 	IInsightFacade,
 	InsightDatasetKind,
@@ -364,6 +365,12 @@ describe("InsightFacade", function () {
 		it("[valid/anyOrder.json] SELECT dept, avg WHERE avg = 97", checkQuery);
 		it("[valid/emptyResult.json] SELECT dept, avg WHERE year = 0", checkQuery);
 		it("[valid/andStringNumber.json] SELECT instructor and uuid WHERE dept IS z* AND year = 2015", checkQuery);
+		it("[valid/ascSort.json] SELECT dept, avg WHERE avg > 97 ORDER by avg ASC", checkQuery);
+		it("[valid/descSort.json] SELECT dept, avg WHERE avg > 97 ORDER by avg DESC", checkQuery);
+		it(
+			"[valid/sortMultipleKey.json] SELECT * WHERE avg > 99 ORDER BY sections_avg DESC, sections_year DESC",
+			checkQuery
+		);
 		it("[invalid/resultTooLarge.json] Result too large error", checkQuery);
 		it("[invalid/invalid.json] Query missing WHERE", checkQuery);
 		it("[invalid/options.json] Query missing OPTIONS", checkQuery);
@@ -385,6 +392,9 @@ describe("InsightFacade", function () {
 		);
 		it("[invalid/noColumns.json] Query that does not have COLUMNS", checkQuery);
 		it("[invalid/emptyColumn.json] Query with empty COLUMNS array", checkQuery);
+		it("[invalid/emptyOrderKeys.json] Query with empty order keys array", checkQuery);
+		it("[invalid/missingOrderKeys.json] Query with missing order keys array", checkQuery);
+		it("[invalid/missingOrderDir.json] Query with missing order dir key", checkQuery);
 		it("[invalid/sComparison.json] Query that compare a mkey using SCOMPARISON", checkQuery);
 		it("[invalid/mComparison.json] Query that compare a skey using MCOMPARISON", checkQuery);
 		it("[invalid/emptyAnd.json] Query with empty AND array", checkQuery);
@@ -397,5 +407,147 @@ describe("InsightFacade", function () {
 		it("[invalid/optionKey.json] Query with an invalid key in OPTIONS (LT inside OPTIONS)", checkQuery);
 		it("[invalid/isNotObject.json] Query with IS that is not an object", checkQuery);
 		it("[invalid/gtNotObject.json] Query with GT that is not an object", checkQuery);
+	});
+});
+
+describe.only("InsightFacade Tests for C2 Features", function () {
+	let facade: IInsightFacade;
+
+	// Declare datasets used in tests. You should add more datasets like this!
+	let simpleCampus: string;
+	let ubcCampus: string;
+	let noBuildings: string;
+	let noIndex: string;
+	let emptyIndex: string;
+	let missingRoomsTable: string;
+	let missingFields: string;
+
+	before(async function () {
+		// This block runs once and loads the datasets.
+		simpleCampus = await getContentFromArchives("simpleCampus.zip");
+		ubcCampus = await getContentFromArchives("campus.zip");
+		noBuildings = await getContentFromArchives("campusNoBuildings.zip");
+		noIndex = await getContentFromArchives("campusNoIndex.zip");
+		emptyIndex = await getContentFromArchives("campusEmptyIndex.zip");
+		missingRoomsTable = await getContentFromArchives("simpleInvalidCampusNoRooms.zip");
+		missingFields = await getContentFromArchives("simpleInavlidCampusMissingFields.zip");
+
+		// Just in case there is anything hanging around from a previous run of the test suite
+		await clearDisk();
+	});
+
+	describe("AddDataset (RoomDataset)", function () {
+		beforeEach(function () {
+			facade = new InsightFacade();
+		});
+
+		afterEach(async function () {
+			await clearDisk();
+		});
+
+		it("should successfully add a simple room dataset", function () {
+			const result = facade.addDataset("simple", simpleCampus, InsightDatasetKind.Rooms);
+			// const names = await facade.listDatasets();
+			// console.log(names);
+			return expect(result).to.eventually.have.members(["simple"]);
+		});
+
+		it("should successfully add a big room dataset", function () {
+			const result = facade.addDataset("ubc", ubcCampus, InsightDatasetKind.Rooms);
+			// const names = await facade.listDatasets();
+			// console.log(names);
+			return expect(result).to.eventually.have.members(["ubc"]);
+		});
+
+		// reject when:
+		// invalid zip: zip does not contain a valid room, no index file
+		// invalid index: no valid building list table
+		// invalid room: room file is missing a field, invalid geolocation
+		it("should reject when zip file has no buildings (ie. no rooms)", function () {
+			const result = facade.addDataset("noBuildings", noBuildings, InsightDatasetKind.Rooms);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should reject when room dataset is missing index file", function () {
+			const result = facade.addDataset("noIndex", noIndex, InsightDatasetKind.Rooms);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should reject when room dataset has a blank index file (ie. index has no tables)", function () {
+			const result = facade.addDataset("emptyIndex", emptyIndex, InsightDatasetKind.Rooms);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		// not actually sure if this the expected behaviour
+		it("should reject if the only building file has no rooms table (ie. the dataset does not contain at least one valid room)", function () {
+			const result = facade.addDataset("missingRoomsTable", missingRoomsTable, InsightDatasetKind.Rooms);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should reject if the only building file has a rooms table but the rooms are missing some fields (ie. the dataset does not contain at least one valid room)", function () {
+			const result = facade.addDataset("missingFields", missingFields, InsightDatasetKind.Rooms);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+	});
+
+	describe("PerformQuery (RoomDataset)", function () {
+		async function checkQuery(this: Mocha.Context): Promise<any> {
+			if (!this.test) {
+				throw new Error(
+					"Invalid call to checkQuery." +
+						"Usage: 'checkQuery' must be passed as the second parameter of Mocha's it(..) function." +
+						"Do not invoke the function directly."
+				);
+			}
+			// Destructuring assignment to reduce property accesses
+			const { input, expected, errorExpected } = await loadTestQuery(this.test.title);
+			let result: InsightResult[];
+			try {
+				result = await facade.performQuery(input);
+			} catch (err) {
+				if (!errorExpected) {
+					expect.fail(`performQuery threw unexpected error: ${err}`);
+				}
+				// TODO: replace with your assertions
+				// If performQuery() is expected to reject, expected will be a string that represents the error type.
+				if (err instanceof Error) {
+					return expect(err.constructor.name).to.equal(expected);
+				}
+				expect.fail(`should thrown error`);
+			}
+			if (errorExpected) {
+				expect.fail(`performQuery resolved when it should have rejected with ${expected}`);
+			}
+			return expect(result).to.have.deep.members(expected); // TODO: replace with your assertions
+		}
+
+		before(async function () {
+			facade = new InsightFacade();
+
+			// Add the datasets to InsightFacade once.
+			// Will *fail* if there is a problem reading ANY dataset.
+			const loadDatasetPromises: Promise<string[]>[] = [
+				facade.addDataset("rooms", ubcCampus, InsightDatasetKind.Rooms),
+			];
+
+			try {
+				await Promise.all(loadDatasetPromises);
+			} catch (err) {
+				throw new Error(`In PerformQuery Before hook, dataset(s) failed to be added. \n${err}`);
+			}
+		});
+
+		after(async function () {
+			await clearDisk();
+		});
+
+		it("[valid/rqAllKeys.json] SELECT * WHERE room_seats < 7", checkQuery);
+		// it("[valid/rqBasic.json] SELECT rooms_shortname, rooms_fullname, rooms_seats WHERE rooms_seats > 300", checkQuery);
+		it(
+			"[valid/rqWithAggregation.json] SELECT rooms_shortname, maxSeats WHERE rooms_furniture IS Tables AND rooms_seats > 300 GROUP BY rooms_shortname",
+			checkQuery
+		);
+		it("[invalid/rqInvalidWhereKey.json] Room query using a Section key in WHERE clause", checkQuery);
+		it("[invalid/rqInvalidOptionsKeys.json] Room query using Section keys in OPTIONS", checkQuery);
 	});
 });

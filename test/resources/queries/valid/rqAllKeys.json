@@ -1,0 +1,54 @@
+{
+    "title": "SELECT * WHERE room_seats < 7",
+    "input": {
+        "WHERE": {
+            "LT": {
+                "rooms_seats": 7
+            }
+        },
+        "OPTIONS": {
+            "COLUMNS": [
+                "rooms_fullname",
+                "rooms_shortname",
+                "rooms_number",
+                "rooms_name",
+                "rooms_address",
+                "rooms_type",
+                "rooms_furniture",
+                "rooms_href",
+                "rooms_lat",
+                "rooms_seats",
+                "rooms_lon"
+            ]
+        }
+    },
+    "errorExpected": false,
+    "expected": [
+        {
+            "rooms_fullname": "MacMillan",
+            "rooms_shortname": "MCML",
+            "rooms_number": "360A",
+            "rooms_name": "MCML_360A",
+            "rooms_address": "2357 Main Mall",
+            "rooms_type": "Small Group",
+            "rooms_furniture": "Classroom-Moveable Tables & Chairs",
+            "rooms_href": "http://students.ubc.ca/campus/discover/buildings-and-classrooms/room/MCML-360A",
+            "rooms_lat": 49.26114,
+            "rooms_seats": 6,
+            "rooms_lon": -123.25027
+        },
+        {
+            "rooms_fullname": "MacMillan",
+            "rooms_shortname": "MCML",
+            "rooms_number": "360B",
+            "rooms_name": "MCML_360B",
+            "rooms_address": "2357 Main Mall",
+            "rooms_type": "Small Group",
+            "rooms_furniture": "Classroom-Moveable Tables & Chairs",
+            "rooms_href": "http://students.ubc.ca/campus/discover/buildings-and-classrooms/room/MCML-360B",
+            "rooms_lat": 49.26114,
+            "rooms_seats": 6,
+            "rooms_lon": -123.25027
+        }
+    ]
+}
