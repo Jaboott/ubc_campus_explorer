@@ -2,7 +2,6 @@ import { InsightDatasetKind, InsightError } from "../controller/IInsightFacade";
 import { readSection } from "./sectionProcessingHandler";
 import { readRoom } from "./roomProcessingHandler";
 import Section from "../controller/Section";
-import fs from "fs";
 import Room from "../controller/Room";
 
 export async function readData(content: string, kind: InsightDatasetKind): Promise<any[]> {
@@ -58,13 +57,12 @@ export function dataToInsightKind(dataEntities: any[], kind: InsightDatasetKind)
 	return allObjects;
 }
 
-export function readExistingDataset(path: string): Map<string, InsightDatasetKind> {
-	const data = fs.readFileSync(path, "utf8");
+export function readExistingDataset(data: any): Map<string, InsightDatasetKind> {
 	const existingDataset = JSON.parse(data);
 	// Turn the json back to a map
 	const map = new Map(
 		Object.entries(existingDataset).map(([key, value]) => {
-			return [key, value === "section" ? InsightDatasetKind.Sections : InsightDatasetKind.Rooms];
+			return [key, value === "sections" ? InsightDatasetKind.Sections : InsightDatasetKind.Rooms];
 		})
 	);
 	return map;

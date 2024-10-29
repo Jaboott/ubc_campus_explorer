@@ -21,23 +21,43 @@ export default class InsightFacade implements IInsightFacade {
 	private existingDataset: Map<string, InsightDatasetKind>;
 	private readonly DATA_DIR = "data/"; // change back to data
 
+	// constructor() {
+	// 	const path = this.DATA_DIR + "existingDataset.json";
+	// 	// Making sure "data/" exists
+	// 	if (!fs.existsSync(this.DATA_DIR)) {
+	// 		fs.mkdirSync(this.DATA_DIR);
+	// 	}
+	// 	// Checking to see if existingDataset.json already exist
+	// 	if (fs.existsSync(path)) {
+	// 		this.existingDataset = readExistingDataset(path);
+	// 	} else {
+	// 		this.existingDataset = new Map();
+	// 		// Creating "data/existingDataset.json"
+	// 		fs.writeFileSync(path, "");
+	// 	}
+	// }
+
 	constructor() {
+		this.existingDataset = new Map();
+	}
+
+	private async initFacade(): Promise<void> {
 		const path = this.DATA_DIR + "existingDataset.json";
 		// Making sure "data/" exists
-		if (!fs.existsSync(this.DATA_DIR)) {
-			fs.mkdirSync(this.DATA_DIR);
-		}
-		// Checking to see if existingDataset.json already exist
-		if (fs.existsSync(path)) {
-			this.existingDataset = readExistingDataset(path);
-		} else {
-			this.existingDataset = new Map();
-			// Creating "data/existingDataset.json"
-			fs.writeFileSync(path, "");
+		await fs.mkdir(this.DATA_DIR, { recursive: true });
+
+		try {
+			const data = await fs.readFile(path, "utf8");
+			this.existingDataset = readExistingDataset(data);
+		} catch (error) {
+			if (error instanceof Error && error.name === "364") {
+				await fs.writeFile(path, "");
+			}
 		}
 	}
 
 	public async addDataset(id: string, content: string, kind: InsightDatasetKind): Promise<string[]> {
+		await this.initFacade();
 		if (!id || !content || !kind) {
 			throw new InsightError("Param not set");
 		} else if (this.existingDataset.has(id)) {
@@ -49,7 +69,6 @@ export default class InsightFacade implements IInsightFacade {
 
 		// Throws InsightError if unexpected kind
 		const dataEntities = await readData(content, kind);
-		console.log(dataEntities.length);
 		const allObjects = dataToInsightKind(dataEntities, kind);
 
 		// path is "data/${id}"
@@ -67,6 +86,7 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public async removeDataset(id: string): Promise<string> {
+		await this.initFacade();
 		const path = this.DATA_DIR + id + ".json";
 		idValidator(id);
 		// const fileExists = await fs.pathExists(path);
@@ -102,13 +122,15 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public async performQuery(query: unknown): Promise<InsightResult[]> {
+		await this.initFacade();
 		// const queryObject = Object(query);
 		queryValidator(query);
-		const resultSoFar = handleWhere(query, this.existingDataset);
+		const resultSoFar = await handleWhere(query, this.existingDataset);
 		return handleOptions(query, resultSoFar);
 	}
 
 	public async listDatasets(): Promise<InsightDataset[]> {
+		await this.initFacade();
 		const result: Promise<InsightDataset>[] = [];
 		// loop through the existing dataset
 		for (const id of this.existingDataset.keys()) {

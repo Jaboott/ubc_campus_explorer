@@ -238,9 +238,12 @@ function queryMapper(param: string, content: any, resultSoFar: InsightResult[]):
 }
 
 // get all rows from a dataset and filter using comparator if necessary
-export function handleWhere(content: any, existingDataset: Map<string, InsightDatasetKind>): InsightResult[] {
+export async function handleWhere(
+	content: any,
+	existingDataset: Map<string, InsightDatasetKind>
+): Promise<InsightResult[]> {
 	getDataset(content, existingDataset);
-	const rawData = fs.readFileSync(`data/${datasetName}.json`, "utf-8");
+	const rawData = await fs.promises.readFile(`data/${datasetName}.json`, "utf-8");
 	let resultSoFar = JSON.parse(rawData);
 	content as Content;
 	for (const param in content.WHERE) {
