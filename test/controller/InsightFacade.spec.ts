@@ -542,12 +542,21 @@ describe.only("InsightFacade Tests for C2 Features", function () {
 		});
 
 		it("[valid/rqAllKeys.json] SELECT * WHERE room_seats < 7", checkQuery);
-		// it("[valid/rqBasic.json] SELECT rooms_shortname, rooms_fullname, rooms_seats WHERE rooms_seats > 300", checkQuery);
+		it("[valid/rqBasic.json] SELECT rooms_shortname, rooms_fullname, rooms_seats WHERE rooms_seats > 300", checkQuery);
 		it(
 			"[valid/rqWithAggregation.json] SELECT rooms_shortname, maxSeats WHERE rooms_furniture IS Tables AND rooms_seats > 300 GROUP BY rooms_shortname",
 			checkQuery
 		);
 		it("[invalid/rqInvalidWhereKey.json] Room query using a Section key in WHERE clause", checkQuery);
 		it("[invalid/rqInvalidOptionsKeys.json] Room query using Section keys in OPTIONS", checkQuery);
+		it("[invalid/invalidApplyKey.json] Room query that uses underscore in applyKey", checkQuery);
+		it(
+			"[invalid/invalidKeyCol.json] Keys in COLUMNS must be in GROUP or APPLY when TRANSFORMATIONS is present",
+			checkQuery
+		);
+		it("[invalid/emptyGroup.json] GROUP must be a non-empty array", checkQuery);
+		it("[invalid/noGroup.json] TRANSFORMATIONS missing GROUP", checkQuery);
+		it("[invalid/applyNotObj.json] Apply body must be object", checkQuery);
+		it("[invalid/noApply.json] TRANSFORMATIONS missing APPLY", checkQuery);
 	});
 });

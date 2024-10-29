@@ -1,4 +1,5 @@
 import { InsightDatasetKind, InsightError, InsightResult, ResultTooLargeError } from "../controller/IInsightFacade";
+import { transformationsValidator } from "./handleTransformation";
 import * as fs from "fs";
 
 const MAX_RESULT = 5000;
@@ -22,14 +23,14 @@ interface FILTER {
 	NOT?: FILTER;
 }
 
-interface TRANSFORMATION {
+interface TRANSFORMATIONS {
 	// TODO
 }
 
 interface Content {
 	WHERE: FILTER;
 	OPTIONS: OPTIONS;
-	TRANSFORMATION: TRANSFORMATION;
+	TRANSFORMATIONS: TRANSFORMATIONS;
 }
 
 export function queryValidator(query: any, existingDataset: Map<string, InsightDatasetKind>): void {
@@ -37,18 +38,29 @@ export function queryValidator(query: any, existingDataset: Map<string, InsightD
 	const validKeys = ["WHERE", "OPTIONS"];
 	const queryKeys = Object.keys(queryContent);
 
-	// Check if query only include WHERE and OPTIONS
-	// TODO Transformation should be optional
-	if (queryKeys.length !== validKeys.length || !validKeys.every((key) => queryKeys.includes(key))) {
-		throw new InsightError("Query must include only WHERE, OPTIONS and TRANSFORMATIONS");
+	if (!queryKeys.includes("WHERE") || !queryKeys.includes("OPTIONS")) {
+		throw new InsightError("Query must include WHERE and OPTIONS");
 	}
-	// moved getDataset here because datasetKind is needed to determine the valid mfield and sfield
-	// it could be written in a better way tho
-	getDataset(query, existingDataset);
-	optionsValidator(queryContent.OPTIONS);
-	// Special case when WHERE has no filter is valid
-	if (Object.keys(queryContent.WHERE).length !== 0) {
-		filterValidator(queryContent.WHERE);
+
+	if (
+		!queryKeys.includes("TRANSFORMATIONS") &&
+		(queryKeys.length !== validKeys.length || !validKeys.every((key) => queryKeys.includes(key)))
+	) {
+		throw new InsightError("Query must include only WHERE, OPTIONS");
+	}
+
+	if (queryKeys.includes("TRANSFORMATIONS")) {
+		transformationsValidator(query);
+		// TODO check if the query is only referencing 1 dataset
+	} else {
+		// moved getDataset here because datasetKind is needed to determine the valid mfield and sfield
+		// it could be written in a better way tho
+		getDataset(query, existingDataset);
+		optionsValidator(queryContent.OPTIONS);
+		// Special case when WHERE has no filter is valid
+		if (Object.keys(queryContent.WHERE).length !== 0) {
+			filterValidator(queryContent.WHERE);
+		}
 	}
 }
 
@@ -190,6 +202,7 @@ function validateDir(order: { dir: string; keys: string[] }, column: string[]): 
 function getDataset(content: any, existingDataset: Map<string, InsightDatasetKind>): void {
 	content as Content;
 	const regex = new RegExp(/^([^_]+)/); // chatgpt generated regex expression
+
 	// had to check column is not empty before getting the datasetName
 	if (Object.keys(content.OPTIONS).length === 0) {
 		throw new InsightError("OPTIONS can't be left empty");
