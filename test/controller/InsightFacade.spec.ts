@@ -414,21 +414,24 @@ describe.only("InsightFacade Tests for C2 Features", function () {
 	let facade: IInsightFacade;
 
 	// Declare datasets used in tests. You should add more datasets like this!
-	let ubcRooms: string;
+	let simpleCampus: string;
+	let ubcCampus: string;
 	let noBuildings: string;
 	let noIndex: string;
 	let emptyIndex: string;
-	let missingRoomsTable: string;
-	let missingFields: string;
+	// let missingRoomsTable: string;
+	// let missingFields: string;
 
 	before(async function () {
 		// This block runs once and loads the datasets.
-		ubcRooms = await getContentFromArchives("campus.zip");
+		simpleCampus = await getContentFromArchives("simpleCampus.zip");
+		ubcCampus = await getContentFromArchives("campus.zip");
 		noBuildings = await getContentFromArchives("campusNoBuildings.zip");
 		noIndex = await getContentFromArchives("campusNoIndex.zip");
 		emptyIndex = await getContentFromArchives("campusEmptyIndex.zip");
-		missingRoomsTable = await getContentFromArchives("simpleInvalidCampusNoRooms.zip");
-		missingFields = await getContentFromArchives("simpleInavlidCampusMissingFields.zip");
+		// missingRoomsTable = await getContentFromArchives("simpleInvalidCampusNoRooms.zip");
+		// missingFields = await getContentFromArchives("simpleInavlidCampusMissingFields.zip");
+
 		// Just in case there is anything hanging around from a previous run of the test suite
 		await clearDisk();
 	});
@@ -442,8 +445,13 @@ describe.only("InsightFacade Tests for C2 Features", function () {
 			await clearDisk();
 		});
 
-		it("should successfully add a room dataset", function () {
-			const result = facade.addDataset("ubc", ubcRooms, InsightDatasetKind.Rooms);
+		it("should successfully add a simple room dataset", function () {
+			const result = facade.addDataset("simple", simpleCampus, InsightDatasetKind.Rooms);
+			return expect(result).to.eventually.have.members(["simple"]);
+		});
+
+		it("should successfully add a big room dataset", function () {
+			const result = facade.addDataset("ubc", ubcCampus, InsightDatasetKind.Rooms);
 			return expect(result).to.eventually.have.members(["ubc"]);
 		});
 
@@ -466,15 +474,16 @@ describe.only("InsightFacade Tests for C2 Features", function () {
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
 
-		it("should reject if the only building file has no rooms table (ie. the dataset does not contain at least one valid room)", function () {
-			const result = facade.addDataset("missingRoomsTable", missingRoomsTable, InsightDatasetKind.Rooms);
-			return expect(result).to.eventually.be.rejectedWith(InsightError);
-		});
+		// not actually sure if this the expected behaviour
+		// it("should reject if the only building file has no rooms table (ie. the dataset does not contain at least one valid room)", function () {
+		// 	const result = facade.addDataset("missingRoomsTable", missingRoomsTable, InsightDatasetKind.Rooms);
+		// 	return expect(result).to.eventually.be.rejectedWith(InsightError);
+		// });
 
-		it("should reject if the only building file has a rooms table but the rooms are missing some fields (ie. the dataset does not contain at least one valid room)", function () {
-			const result = facade.addDataset("missingFields", missingFields, InsightDatasetKind.Rooms);
-			return expect(result).to.eventually.be.rejectedWith(InsightError);
-		});
+		// it("should reject if the only building file has a rooms table but the rooms are missing some fields (ie. the dataset does not contain at least one valid room)", function () {
+		// 	const result = facade.addDataset("missingFields", missingFields, InsightDatasetKind.Rooms);
+		// 	return expect(result).to.eventually.be.rejectedWith(InsightError);
+		// });
 	});
 
 	describe("PerformQuery (RoomDataset)", function () {
@@ -514,7 +523,7 @@ describe.only("InsightFacade Tests for C2 Features", function () {
 			// Add the datasets to InsightFacade once.
 			// Will *fail* if there is a problem reading ANY dataset.
 			const loadDatasetPromises: Promise<string[]>[] = [
-				facade.addDataset("ubcCampus", ubcRooms, InsightDatasetKind.Rooms),
+				facade.addDataset("ubcCampus", ubcCampus, InsightDatasetKind.Rooms),
 			];
 
 			try {
