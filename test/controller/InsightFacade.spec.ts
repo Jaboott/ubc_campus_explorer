@@ -545,5 +545,7 @@ describe.only("InsightFacade Tests for C2 Features", function () {
 		);
 		it("[invalid/rqInvalidWhereKey.json] Room query using a Section key in WHERE clause", checkQuery);
 		it("[invalid/rqInvalidOptionsKeys.json] Room query using Section keys in OPTIONS", checkQuery);
+		it("[invalid/invalidApplyKey.json] Room query that uses underscore in applyKey", checkQuery);
+		it("[invalid/invalidKeyCol.json] Keys in COLUMNS must be in GROUP or APPLY when TRANSFORMATIONS is present", checkQuery);
 	});
 });

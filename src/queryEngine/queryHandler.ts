@@ -145,12 +145,6 @@ function optionsValidator(options: OPTIONS): void {
 	if (!Object.hasOwn(options, "COLUMNS") || !Object.keys(options as Object).every((key) => optionKeys.includes(key))) {
 		throw new InsightError("OPTIONS must include only COLUMNS and ORDER");
 	}
-
-	// check that COLUMNS is non-empty
-	if (options?.COLUMNS.length === 0) {
-		throw new InsightError("COLUMNS must be a non-empty array");
-	}
-
 	// check that each field specified in the desired columns is valid
 	for (const column of options.COLUMNS) {
 		const id = column.split("_")[0];
