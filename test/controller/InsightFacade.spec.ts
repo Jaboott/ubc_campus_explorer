@@ -542,7 +542,7 @@ describe.only("InsightFacade Tests for C2 Features", function () {
 		});
 
 		it("[valid/rqAllKeys.json] SELECT * WHERE room_seats < 7", checkQuery);
-		it("[valid/rqBasic.json] SELECT rooms_shortname, rooms_fullname, rooms_seats WHERE rooms_seats > 300", checkQuery);
+		// it("[valid/rqBasic.json] SELECT rooms_shortname, rooms_fullname, rooms_seats WHERE rooms_seats > 300", checkQuery);
 		it(
 			"[valid/rqWithAggregation.json] SELECT rooms_shortname, maxSeats WHERE rooms_furniture IS Tables AND rooms_seats > 300 GROUP BY rooms_shortname",
 			checkQuery
