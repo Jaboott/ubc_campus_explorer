@@ -558,6 +558,10 @@ describe("InsightFacade Tests for C2 Features", function () {
 		it("[valid/aggMin.json] SELECT rooms_shortname, MIN(rooms_seats) WHERE rooms_fullname IS 'A*'", checkQuery);
 		it("[valid/aggMax.json] SELECT rooms_shortname, MAX(rooms_seats) WHERE rooms_fullname IS 'A*'", checkQuery);
 		it("[valid/aggSum.json] SELECT rooms_shortname, SUM(rooms_seats) WHERE rooms_fullname IS 'A*'", checkQuery);
+		it(
+			"[valid/multipleGroupings.json] SELECT rooms_shortname, rooms_furniture, MAX(rooms_seats) WHERE rooms_shortname IS 'BUCH' GROUP BY rooms_shortname, rooms_furniture",
+			checkQuery
+		);
 
 		it("[invalid/rqInvalidWhereKey.json] Room query using a Section key in WHERE clause", checkQuery);
 		it("[invalid/rqInvalidOptionsKeys.json] Room query using Section keys in OPTIONS", checkQuery);
@@ -571,6 +575,11 @@ describe("InsightFacade Tests for C2 Features", function () {
 		it("[invalid/applyNotObj.json] Apply body must be object", checkQuery);
 		it("[invalid/noApply.json] TRANSFORMATIONS missing APPLY", checkQuery);
 		it("[invalid/invalidApplyToken.json] Invalid transformation operator", checkQuery);
+		it(
+			"[invalid/columnKeyMissingInGroup.json] All column keys must be in GROUP/APPLY when TRANSFORMATIONS is present",
+			checkQuery
+		);
+		it("[invalid/emptyApplyKey.json] Apply key cannot be empty string", checkQuery);
 
 		///// experimental
 		it("[valid/rqDuplicateBuilding.json] ", checkQuery);

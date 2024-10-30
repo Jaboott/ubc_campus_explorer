@@ -1,45 +1,45 @@
 {
-	"title": "Room query that uses underscore in applyKey",
-	"input": {
-        "WHERE": {
-          "AND": [
-            {
-              "IS": {
-                "rooms_furniture": "*Tables*"
-              }
-            },
-            {
-              "GT": {
-                "rooms_seats": 300
-              }
-            }
-          ]
-        },
-        "OPTIONS": {
-          "COLUMNS": [
-            "rooms_shortname",
-            "max_seat"
-          ],
-          "ORDER": {
-            "dir": "DOWN",
-            "keys": [
-              "max_seat"
-            ]
+  "title": "Room query that uses underscore in applyKey",
+  "input": {
+    "WHERE": {
+      "AND": [
+        {
+          "IS": {
+            "rooms_furniture": "*Tables*"
           }
         },
-        "TRANSFORMATIONS": {
-          "GROUP": [
-            "rooms_shortname"
-          ],
-          "APPLY": [
-            {
-              "max_seat": {
-                "MAX": "rooms_seats"
-              }
-            }
-          ]
+        {
+          "GT": {
+            "rooms_seats": 300
+          }
         }
-      },
-	"errorExpected": true,
-	"expected": "InsightError"
+      ]
+    },
+    "OPTIONS": {
+      "COLUMNS": [
+        "rooms_shortname",
+        "max_seat"
+      ],
+      "ORDER": {
+        "dir": "DOWN",
+        "keys": [
+          "max_seat"
+        ]
+      }
+    },
+    "TRANSFORMATIONS": {
+      "GROUP": [
+        "rooms_shortname"
+      ],
+      "APPLY": [
+        {
+          "max_seat": {
+            "MAX": "rooms_seats"
+          }
+        }
+      ]
+    }
+  },
+  "errorExpected": true,
+  "expected": "InsightError"
 }
