@@ -136,7 +136,7 @@ async function getBuildingInformation(tableRow: any): Promise<Building | null> {
 		return null;
 	}
 
-	const fullname = getText(fieldsMap["views-field views-field-title"]).replace(/\s+/g, " ");
+	const fullname = getText(fieldsMap["views-field views-field-title"]);
 	const shortname = getText(fieldsMap["views-field views-field-field-building-code"]);
 	const address = getText(fieldsMap["views-field views-field-field-building-address"]);
 	const href = fieldsMap["views-field views-field-title"].attrs.find((attr: any) => attr.name === "href").value;
