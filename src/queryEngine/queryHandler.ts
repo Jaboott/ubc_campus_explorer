@@ -30,7 +30,7 @@ interface TRANSFORMATIONS {
 interface Content {
 	WHERE: FILTER;
 	OPTIONS: OPTIONS;
-	TRANSFORMATIONS: TRANSFORMATIONS;
+	TRANSFORMATIONS?: TRANSFORMATIONS;
 }
 
 export function queryValidator(query: any, existingDataset: Map<string, InsightDatasetKind>): void {

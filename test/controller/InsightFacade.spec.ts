@@ -289,7 +289,7 @@ describe("InsightFacade", function () {
 		});
 	});
 
-	describe.only("PerformQuery", function () {
+	describe("PerformQuery", function () {
 		/**
 		 * Loads the TestQuery specified in the test name and asserts the behaviour of performQuery.
 		 *
@@ -410,7 +410,7 @@ describe("InsightFacade", function () {
 	});
 });
 
-describe.only("InsightFacade Tests for C2 Features", function () {
+describe("InsightFacade Tests for C2 Features", function () {
 	let facade: IInsightFacade;
 
 	// Declare datasets used in tests. You should add more datasets like this!
@@ -558,5 +558,6 @@ describe.only("InsightFacade Tests for C2 Features", function () {
 		it("[invalid/noGroup.json] TRANSFORMATIONS missing GROUP", checkQuery);
 		it("[invalid/applyNotObj.json] Apply body must be object", checkQuery);
 		it("[invalid/noApply.json] TRANSFORMATIONS missing APPLY", checkQuery);
+		it("[invalid/invalidApplyToken.json] Invalid transformation operator", checkQuery);
 	});
 });
