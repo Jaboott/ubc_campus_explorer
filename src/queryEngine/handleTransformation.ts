@@ -24,10 +24,6 @@ function groupValidator(group: any): void {
 }
 
 function applyValidator(apply: any): void {
-	if (!Array.isArray(apply) || apply.length === 0) {
-		throw new InsightError("APPLY must be a non-empty array.");
-	}
-
 	apply.forEach((applyRule: any) => {
 		if (typeof applyRule !== "object") {
 			throw new InsightError("APPLYRULE must be an object");
@@ -38,7 +34,12 @@ function applyValidator(apply: any): void {
 			throw new InsightError(`Invalid key in GROUP: ${applyKey}`);
 		}
 
-		const applyToken = Object.keys(applyRule[applyKey])[0];
+		const applyBody = Object.keys(applyRule[applyKey]);
+		if (typeof applyBody !== "object") {
+			throw new InsightError("apply body must be an object");
+		}
+
+		const applyToken = applyBody[0];
 		const validTokens = ["MAX", "MIN", "AVG", "COUNT", "SUM"];
 		if (!validTokens.includes(applyToken)) {
 			throw new InsightError(`Invalid APPLYTOKEN '${applyToken}'`);
@@ -46,5 +47,6 @@ function applyValidator(apply: any): void {
 
 		// TODO applyKey depends on whether it is room or section
 		// TODO check if it is only referencing 1 dataset
+		// TODO column could include applykey
 	});
 }
