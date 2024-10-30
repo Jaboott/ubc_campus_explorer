@@ -7,6 +7,7 @@ let datasetName = "";
 let datasetKind = "";
 let mfield: string[] = [];
 let sfield: string[] = [];
+let applyKey = "";
 
 interface OPTIONS {
 	COLUMNS: string[];
@@ -23,14 +24,14 @@ interface FILTER {
 	NOT?: FILTER;
 }
 
-interface TRANSFORMATIONS {
-	// TODO
-}
+// interface TRANSFORMATIONS {
+// 	// TODO
+// }
 
 interface Content {
 	WHERE: FILTER;
 	OPTIONS: OPTIONS;
-	TRANSFORMATIONS?: TRANSFORMATIONS;
+	// TRANSFORMATIONS?: TRANSFORMATIONS;
 }
 
 export function queryValidator(query: any, existingDataset: Map<string, InsightDatasetKind>): void {
@@ -50,8 +51,9 @@ export function queryValidator(query: any, existingDataset: Map<string, InsightD
 	}
 
 	if (queryKeys.includes("TRANSFORMATIONS")) {
-		transformationsValidator(query);
-		// TODO check if the query is only referencing 1 dataset
+		applyKey = transformationsValidator(query);
+		getDataset(query, existingDataset); // placeholder here - TODO check if the query is only referencing 1 dataset
+		optionsValidator(queryContent.OPTIONS, applyKey);
 	} else {
 		// moved getDataset here because datasetKind is needed to determine the valid mfield and sfield
 		// it could be written in a better way tho
@@ -106,8 +108,7 @@ function filterValidator(filter: FILTER): void {
 }
 
 function checkKey(key: string, type: string): void {
-	// const mfield = ["avg", "pass", "fail", "audit", "year"];
-	// const sfield = ["dept", "id", "instructor", "title", "uuid"];
+	// const mfield = ["avg", "pass", "fail", "audit", "year"]; const sfield = ["dept", "id", "instructor", "title", "uuid"];
 	// chatgpt generated to check for string with only 1 _ and not empty or white space only
 	const keyValidator = new RegExp(/^(?=\S)(?=[^_]*_)[^_]*_[^_]*$/);
 
@@ -148,9 +149,8 @@ function checkFilter(bodyObject: Object, type: string, filterType: string): void
 	}
 }
 
-function optionsValidator(options: OPTIONS): void {
-	// const mfield = ["avg", "pass", "fail", "audit", "year"];
-	// const sfield = ["dept", "id", "instructor", "title", "uuid"];
+function optionsValidator(options: OPTIONS, groupKey = ""): void {
+	// const mfield = ["avg", "pass", "fail", "audit", "year"]; const sfield = ["dept", "id", "instructor", "title", "uuid"];
 	const optionKeys = ["COLUMNS", "ORDER"];
 
 	// Check if query has COLUMNS and does not include any invalid key
@@ -159,6 +159,9 @@ function optionsValidator(options: OPTIONS): void {
 	}
 	// check that each field specified in the desired columns is valid
 	for (const column of options.COLUMNS) {
+		if (groupKey && column === groupKey) {
+			continue;
+		}
 		const id = column.split("_")[0];
 		const field = column.split("_")[1]; // gets part of column name after "_" (the field)
 		const keyValidator = new RegExp(/^(?=\S)(?=[^_]*_)[^_]*_[^_]*$/);
@@ -230,7 +233,10 @@ function getDataset(content: any, existingDataset: Map<string, InsightDatasetKin
 }
 
 // check if the query is only referencing 1 dataset
-function datasetValidator(dataToCheck: string): void {
+function datasetValidator(dataToCheck: string, groupKey = ""): void {
+	if (groupKey && dataToCheck === groupKey) {
+		return;
+	}
 	dataToCheck = dataToCheck.split("_")[0]; // chatgpt generated to extract the string before underscore
 	if (dataToCheck !== datasetName) {
 		throw new InsightError("Cannot reference more than 1 dataset");
@@ -330,7 +336,7 @@ function selectColumns(columns: string[], resultSoFar: InsightResult[]): Insight
 		const selectedResult: Record<string, any> = {};
 		// loop through the column array
 		columns.forEach((column) => {
-			datasetValidator(column);
+			datasetValidator(column, applyKey);
 			const key = column.split("_").slice(1).join("_"); // chatgpt generated to extract the string behind underscore
 			selectedResult[column] = item[key]; // column comes with datasetName but key does not
 		});

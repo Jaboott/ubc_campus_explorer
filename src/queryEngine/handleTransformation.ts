@@ -1,6 +1,8 @@
 import { InsightError } from "../controller/IInsightFacade";
 
-export function transformationsValidator(query: any): void {
+let applyKey = "";
+
+export function transformationsValidator(query: any): string {
 	const transformations = query.TRANSFORMATIONS;
 	if (!transformations?.GROUP || !transformations?.APPLY) {
 		throw new InsightError("TRANSFORMATIONS must contain both GROUP and APPLY");
@@ -8,6 +10,8 @@ export function transformationsValidator(query: any): void {
 
 	groupValidator(transformations.GROUP);
 	applyValidator(transformations.APPLY);
+
+	return applyKey;
 }
 
 function groupValidator(group: any): void {
@@ -28,9 +32,9 @@ function applyValidator(apply: any): void {
 		if (typeof applyRule !== "object") {
 			throw new InsightError("APPLYRULE must be an object");
 		}
-		const applyKey = Object.keys(applyRule)[0];
+		applyKey = Object.keys(applyRule)[0];
 		const keyValidator = new RegExp(/^[^_]+$/); // cannot be empty or contain underscore
-		if (!keyValidator.test(Object.keys(applyKey)[0])) {
+		if (!keyValidator.test(applyKey)) {
 			throw new InsightError(`Invalid key in GROUP: ${applyKey}`);
 		}
 
@@ -45,8 +49,8 @@ function applyValidator(apply: any): void {
 			throw new InsightError(`Invalid APPLYTOKEN '${applyToken}'`);
 		}
 
-		// TODO applyKey depends on whether it is room or section
+		// TODO check apply body - depends on whether it is room or section
 		// TODO check if it is only referencing 1 dataset
-		// TODO column could include applykey
+		// TODO GROUPING & APPLY
 	});
 }
