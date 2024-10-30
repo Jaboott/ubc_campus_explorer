@@ -415,6 +415,7 @@ describe("InsightFacade Tests for C2 Features", function () {
 
 	// Declare datasets used in tests. You should add more datasets like this!
 	let simpleCampus: string;
+	let simpleDupBuilding: string;
 	let ubcCampus: string;
 	let noBuildings: string;
 	let noIndex: string;
@@ -425,6 +426,7 @@ describe("InsightFacade Tests for C2 Features", function () {
 	before(async function () {
 		// This block runs once and loads the datasets.
 		simpleCampus = await getContentFromArchives("simpleCampus.zip");
+		simpleDupBuilding = await getContentFromArchives("simpleCampusDuplicateBuilding.zip");
 		ubcCampus = await getContentFromArchives("campus.zip");
 		noBuildings = await getContentFromArchives("campusNoBuildings.zip");
 		noIndex = await getContentFromArchives("campusNoIndex.zip");
@@ -488,6 +490,9 @@ describe("InsightFacade Tests for C2 Features", function () {
 			const result = facade.addDataset("missingFields", missingFields, InsightDatasetKind.Rooms);
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
+
+		// duplicate buildings on table
+		// many invalids with a single valid buildings
 	});
 
 	describe("PerformQuery (RoomDataset)", function () {
@@ -528,6 +533,7 @@ describe("InsightFacade Tests for C2 Features", function () {
 			// Will *fail* if there is a problem reading ANY dataset.
 			const loadDatasetPromises: Promise<string[]>[] = [
 				facade.addDataset("rooms", ubcCampus, InsightDatasetKind.Rooms),
+				facade.addDataset("dup", simpleDupBuilding, InsightDatasetKind.Rooms),
 			];
 
 			try {
@@ -559,5 +565,8 @@ describe("InsightFacade Tests for C2 Features", function () {
 		it("[invalid/applyNotObj.json] Apply body must be object", checkQuery);
 		it("[invalid/noApply.json] TRANSFORMATIONS missing APPLY", checkQuery);
 		it("[invalid/invalidApplyToken.json] Invalid transformation operator", checkQuery);
+
+		///// experimental
+		it("[valid/rqDuplicateBuilding.json] ", checkQuery);
 	});
 });

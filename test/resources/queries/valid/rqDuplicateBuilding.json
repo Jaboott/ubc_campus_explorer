@@ -1,0 +1,117 @@
+{
+    "title": "SELECT dup_shortname, dup_fullname, dup_seats WHERE dup_seats > 300",
+    "input": {
+        "WHERE": {
+        },
+        "OPTIONS": {
+            "COLUMNS": [
+                "dup_shortname",
+                "dup_fullname",
+                "dup_seats"
+            ]
+        }
+    },
+    "errorExpected": false,
+    "expected": [
+        {
+            "dup_shortname": "FSC",
+            "dup_fullname": "Forest Sciences Centre",
+            "dup_seats": 65
+        },
+        {
+            "dup_shortname": "FSC",
+            "dup_fullname": "Forest Sciences Centre",
+            "dup_seats": 24
+        },
+        {
+            "dup_shortname": "FSC",
+            "dup_fullname": "Forest Sciences Centre",
+            "dup_seats": 65
+        },
+        {
+            "dup_shortname": "FSC",
+            "dup_fullname": "Forest Sciences Centre",
+            "dup_seats": 250
+        },
+        {
+            "dup_shortname": "FSC",
+            "dup_fullname": "Forest Sciences Centre",
+            "dup_seats": 99
+        },
+        {
+            "dup_shortname": "FSC",
+            "dup_fullname": "Forest Sciences Centre",
+            "dup_seats": 18
+        },
+        {
+            "dup_shortname": "FSC",
+            "dup_fullname": "Forest Sciences Centre",
+            "dup_seats": 24
+        },
+        {
+            "dup_shortname": "FSC",
+            "dup_fullname": "Forest Sciences Centre",
+            "dup_seats": 36
+        },
+        {
+            "dup_shortname": "FSC",
+            "dup_fullname": "Forest Sciences Centre",
+            "dup_seats": 20
+        },
+        {
+            "dup_shortname": "FSC",
+            "dup_fullname": "Forest Sciences Centre",
+            "dup_seats": 20
+        },
+        {
+            "dup_shortname": "FSC",
+            "dup_fullname": "Forest Sciences Centre",
+            "dup_seats": 65
+        },
+        {
+            "dup_shortname": "FSC",
+            "dup_fullname": "Forest Sciences Centre",
+            "dup_seats": 24
+        },
+        {
+            "dup_shortname": "FSC",
+            "dup_fullname": "Forest Sciences Centre",
+            "dup_seats": 65
+        },
+        {
+            "dup_shortname": "FSC",
+            "dup_fullname": "Forest Sciences Centre",
+            "dup_seats": 250
+        },
+        {
+            "dup_shortname": "FSC",
+            "dup_fullname": "Forest Sciences Centre",
+            "dup_seats": 99
+        },
+        {
+            "dup_shortname": "FSC",
+            "dup_fullname": "Forest Sciences Centre",
+            "dup_seats": 18
+        },
+        {
+            "dup_shortname": "FSC",
+            "dup_fullname": "Forest Sciences Centre",
+            "dup_seats": 24
+        },
+        {
+            "dup_shortname": "FSC",
+            "dup_fullname": "Forest Sciences Centre",
+            "dup_seats": 36
+        },
+        {
+            "dup_shortname": "FSC",
+            "dup_fullname": "Forest Sciences Centre",
+            "dup_seats": 20
+        },
+        {
+            "dup_shortname": "FSC",
+            "dup_fullname": "Forest Sciences Centre",
+            "dup_seats": 20
+        }
+    ]
+}
