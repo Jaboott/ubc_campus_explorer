@@ -550,7 +550,7 @@ describe("InsightFacade Tests for C2 Features", function () {
 		it("[valid/rqAllKeys.json] SELECT * WHERE room_seats < 7", checkQuery);
 		it("[valid/rqBasic.json] SELECT rooms_shortname, rooms_fullname, rooms_seats WHERE rooms_seats > 300", checkQuery);
 		it(
-			"[valid/rqWithAggregation.json] SELECT rooms_shortname, maxSeats WHERE rooms_furniture IS Tables AND rooms_seats > 300 GROUP BY rooms_shortname",
+			"[valid/rqComplex.json] SELECT rooms_shortname, MAX(room_seats) WHERE rooms_furniture IS 'Tables' AND rooms_seats > 300 GROUP BY rooms_shortname",
 			checkQuery
 		);
 		it("[valid/aggAvg.json] SELECT rooms_shortname, AVG(rooms_seats) WHERE rooms_fullname IS 'A*'", checkQuery);
@@ -558,6 +558,10 @@ describe("InsightFacade Tests for C2 Features", function () {
 		it("[valid/aggMin.json] SELECT rooms_shortname, MIN(rooms_seats) WHERE rooms_fullname IS 'A*'", checkQuery);
 		it("[valid/aggMax.json] SELECT rooms_shortname, MAX(rooms_seats) WHERE rooms_fullname IS 'A*'", checkQuery);
 		it("[valid/aggSum.json] SELECT rooms_shortname, SUM(rooms_seats) WHERE rooms_fullname IS 'A*'", checkQuery);
+		it(
+			"[valid/simpleGrouping.json] SELECT rooms_shortname, rooms_furniture WHERE rooms_shortname IS 'B*' GROUP BY rooms_shortname",
+			checkQuery
+		);
 		it(
 			"[valid/multipleGroupings.json] SELECT rooms_shortname, rooms_furniture, MAX(rooms_seats) WHERE rooms_shortname IS 'BUCH' GROUP BY rooms_shortname, rooms_furniture",
 			checkQuery
@@ -580,6 +584,11 @@ describe("InsightFacade Tests for C2 Features", function () {
 			checkQuery
 		);
 		it("[invalid/emptyApplyKey.json] Apply key cannot be empty string", checkQuery);
+		it("[invalid/multipleApplyKeys.json] Apply rule should only have 1 key", checkQuery);
+
+		// TODO:
+		// MAX/MIN/AVG/SUM should only be requested for numeric keys
+		// valid: empty apply (simple grouping)
 
 		///// experimental
 		it("[valid/rqDuplicateBuilding.json] ", checkQuery);
