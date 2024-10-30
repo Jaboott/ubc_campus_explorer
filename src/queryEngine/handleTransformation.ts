@@ -1,4 +1,4 @@
-import { InsightError } from "../controller/IInsightFacade";
+import { InsightError, InsightResult } from "../controller/IInsightFacade";
 
 let applyKey = "";
 
@@ -53,4 +53,32 @@ function applyValidator(apply: any): void {
 		// TODO check if it is only referencing 1 dataset
 		// TODO GROUPING & APPLY
 	});
+}
+
+// TODO
+export function doCalculations(applyClause: any, resultSoFar: any): InsightResult[] {
+	for (const apply of applyClause) {
+		applyKey = Object.keys(apply)[0];
+		const applyBody = apply[applyKey];
+		const applyToken = Object.keys(applyBody)[0];
+		const key = applyBody[applyToken];
+		switch (applyToken) {
+			case "MAX":
+				console.log(key);
+				break;
+
+			case "MIN":
+				break;
+
+			case "AVG":
+				break;
+
+			case "SUM":
+				break;
+
+			case "COUNT":
+				break;
+		}
+	}
+	return resultSoFar;
 }
