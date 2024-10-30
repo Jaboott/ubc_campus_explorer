@@ -553,6 +553,12 @@ describe("InsightFacade Tests for C2 Features", function () {
 			"[valid/rqWithAggregation.json] SELECT rooms_shortname, maxSeats WHERE rooms_furniture IS Tables AND rooms_seats > 300 GROUP BY rooms_shortname",
 			checkQuery
 		);
+		it("[valid/aggAvg.json] SELECT rooms_shortname, AVG(rooms_seats) WHERE rooms_fullname IS 'A*'", checkQuery);
+		it("[valid/aggCount.json] SELECT rooms_shortname, COUNT(*) WHERE rooms_fullname IS 'A*'", checkQuery);
+		it("[valid/aggMin.json] SELECT rooms_shortname, MIN(rooms_seats) WHERE rooms_fullname IS 'A*'", checkQuery);
+		it("[valid/aggMax.json] SELECT rooms_shortname, MAX(rooms_seats) WHERE rooms_fullname IS 'A*'", checkQuery);
+		it("[valid/aggSum.json] SELECT rooms_shortname, SUM(rooms_seats) WHERE rooms_fullname IS 'A*'", checkQuery);
+
 		it("[invalid/rqInvalidWhereKey.json] Room query using a Section key in WHERE clause", checkQuery);
 		it("[invalid/rqInvalidOptionsKeys.json] Room query using Section keys in OPTIONS", checkQuery);
 		it("[invalid/invalidApplyKey.json] Room query that uses underscore in applyKey", checkQuery);

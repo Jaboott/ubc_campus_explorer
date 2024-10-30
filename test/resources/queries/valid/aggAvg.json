@@ -1,0 +1,57 @@
+{
+    "title": "SELECT rooms_shortname, AVG(rooms_seats) WHERE rooms_fullname IS 'A*'",
+    "input": {
+        "WHERE": {
+            "AND": [
+                {
+                    "IS": {
+                        "rooms_fullname": "A*"
+                    }
+                }
+            ]
+        },
+        "OPTIONS": {
+            "COLUMNS": [
+                "rooms_shortname",
+                "avgSeats"
+            ],
+            "ORDER": {
+                "dir": "UP",
+                "keys": [
+                    "avgSeats"
+                ]
+            }
+        },
+        "TRANSFORMATIONS": {
+            "GROUP": [
+                "rooms_shortname"
+            ],
+            "APPLY": [
+                {
+                    "avgSeats": {
+                        "AVG": "rooms_seats"
+                    }
+                }
+            ]
+        }
+    },
+    "errorExpected": false,
+    "expected": [
+        {
+            "rooms_shortname": "AUDX",
+            "avgSeats": 20.5
+        },
+        {
+            "rooms_shortname": "ALRD",
+            "avgSeats": 45.6
+        },
+        {
+            "rooms_shortname": "ANSO",
+            "avgSeats": 46.5
+        },
+        {
+            "rooms_shortname": "AERL",
+            "avgSeats": 144
+        }
+    ]
+}
