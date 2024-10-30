@@ -1,5 +1,5 @@
 import { InsightDatasetKind, InsightError, InsightResult, ResultTooLargeError } from "../controller/IInsightFacade";
-import { doCalculations, transformationsValidator } from "./handleTransformation";
+import { doCalculations, doGroupings, transformationsValidator } from "./handleTransformation";
 import * as fs from "fs";
 
 const MAX_RESULT = 5000;
@@ -288,7 +288,7 @@ export async function handleWhere(content: any): Promise<InsightResult[]> {
 		throw new ResultTooLargeError();
 	}
 	if (content.TRANSFORMATIONS) {
-		// TODO - do the groupings first then do calculations on each group
+		resultSoFar = doGroupings(content.TRANSFORMATIONS.GROUP, resultSoFar);
 		resultSoFar = doCalculations(content.TRANSFORMATIONS.APPLY, resultSoFar);
 	}
 	return resultSoFar;

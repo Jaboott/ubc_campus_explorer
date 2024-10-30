@@ -55,6 +55,22 @@ function applyValidator(apply: any): void {
 	});
 }
 
+// reference https://medium.com/@momoesse/mastering-javascript-a-step-by-step-guide-to-grouping-array-of-objects-by-multiple-conditions-59651ceba95a
+export function doGroupings(groupClause: string[], resultSoFar: InsightResult[]): any {
+	// extract the key behind underscore
+	const keys = (item: any): string => groupClause.map((field) => item[field.split("_")[1]]).join("_");
+
+	const groupedData = resultSoFar.reduce((result: any, currentItem: any) => {
+		const currentKey = keys(currentItem);
+		result[currentKey] = result[currentKey] || [];
+		result[currentKey].push(currentItem);
+		return result;
+	}, {});
+
+	// console.log(groupedData);
+	return groupedData;
+}
+
 // TODO
 export function doCalculations(applyClause: any, resultSoFar: any): InsightResult[] {
 	for (const apply of applyClause) {
