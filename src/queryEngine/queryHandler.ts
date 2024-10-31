@@ -21,9 +21,23 @@ export async function handleWhere(content: any, dsName: string, aKey: string): P
 	}
 	if (content.TRANSFORMATIONS) {
 		resultSoFar = doGroupings(content.TRANSFORMATIONS.GROUP, resultSoFar);
-		resultSoFar = doCalculations(content.TRANSFORMATIONS.APPLY, resultSoFar);
+		// console.log("TRANSFORMATIONS: ", content.TRANSFORMATIONS.APPLY);
+		if (!content.TRANSFORMATIONS.APPLY.length) {
+			resultSoFar = convertGroupingsToInsightResult(resultSoFar);
+		} else {
+			resultSoFar = doCalculations(content.TRANSFORMATIONS.APPLY, resultSoFar);
+		}
 	}
 	return resultSoFar;
+}
+
+// for each group, return the first InsightResult object
+function convertGroupingsToInsightResult(data: any): InsightResult[] {
+	const result: InsightResult[] = [];
+	for (const group in data) {
+		result.push(data[group][0]);
+	}
+	return result;
 }
 
 // check if the query is only referencing 1 dataset
