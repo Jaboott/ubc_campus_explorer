@@ -495,7 +495,7 @@ describe("InsightFacade Tests for C2 Features", function () {
 		// many invalids with a single valid buildings
 	});
 
-	describe("PerformQuery (RoomDataset)", function () {
+	describe.only("PerformQuery (RoomDataset)", function () {
 		async function checkQuery(this: Mocha.Context): Promise<any> {
 			if (!this.test) {
 				throw new Error(
@@ -588,7 +588,7 @@ describe("InsightFacade Tests for C2 Features", function () {
 
 		// TODO:
 		// MAX/MIN/AVG/SUM should only be requested for numeric keys
-		// valid: empty apply (simple grouping)
+		// nested apply's
 
 		///// experimental
 		it("[valid/rqDuplicateBuilding.json] ", checkQuery);

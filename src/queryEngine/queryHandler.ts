@@ -1,8 +1,10 @@
 import { InsightError, InsightResult, ResultTooLargeError } from "../controller/IInsightFacade";
 import * as fs from "fs";
+import Decimal from "decimal.js";
 import { Content } from "./queryObjectInterface";
 
 const MAX_RESULT = 5000;
+const DECIMAL_PLACE = 2;
 let datasetName = "";
 let applyKey = "";
 
@@ -21,9 +23,23 @@ export async function handleWhere(content: any, dsName: string, aKey: string): P
 	}
 	if (content.TRANSFORMATIONS) {
 		resultSoFar = doGroupings(content.TRANSFORMATIONS.GROUP, resultSoFar);
-		resultSoFar = doCalculations(content.TRANSFORMATIONS.APPLY, resultSoFar);
+		// console.log("TRANSFORMATIONS: ", content.TRANSFORMATIONS.APPLY);
+		if (!content.TRANSFORMATIONS.APPLY.length) {
+			resultSoFar = convertGroupingsToInsightResult(resultSoFar);
+		} else {
+			resultSoFar = doCalculations(content.TRANSFORMATIONS.APPLY, resultSoFar);
+		}
 	}
 	return resultSoFar;
+}
+
+// for each group, return the first InsightResult object
+function convertGroupingsToInsightResult(data: any): InsightResult[] {
+	const result: InsightResult[] = [];
+	for (const group in data) {
+		result.push(data[group][0]);
+	}
+	return result;
 }
 
 // check if the query is only referencing 1 dataset
@@ -117,7 +133,7 @@ function selectColumns(columns: string[], resultSoFar: InsightResult[]): Insight
 		// loop through the column array
 		columns.forEach((column) => {
 			datasetValidator(column, applyKey);
-			const key = column.split("_").slice(1).join("_"); // chatgpt generated to extract the string behind underscore
+			const key = column.split("_").slice(1).join("_") || column; // chatgpt generated to extract the string behind underscore. '|| column' part is used to account for aggregated column
 			selectedResult[column] = item[key]; // column comes with datasetName but key does not
 		});
 		return selectedResult;
@@ -155,34 +171,53 @@ export function doGroupings(groupClause: string[], resultSoFar: InsightResult[])
 		return result;
 	}, {});
 
-	// console.log(groupedData);
+	// console.log("GROUPED: ", groupedData);
 	return groupedData;
 }
 
-// TODO
-export function doCalculations(applyClause: any, resultSoFar: any): InsightResult[] {
+// shortened with chatGPT
+function doCalculations(applyClause: any, resultSoFar: any): InsightResult[] {
+	const collapsedResult: InsightResult[] = [];
 	for (const apply of applyClause) {
-		applyKey = Object.keys(apply)[0];
-		const applyBody = apply[applyKey];
-		const applyToken = Object.keys(applyBody)[0];
-		const key = applyBody[applyToken];
-		switch (applyToken) {
-			case "MAX":
-				console.log(key);
-				break;
+		const aggregateColumnName = Object.keys(apply)[0];
+		const applyBody = apply[aggregateColumnName];
+		const key = applyBody[Object.keys(applyBody)[0]].split("_")[1];
 
-			case "MIN":
-				break;
-
-			case "AVG":
-				break;
-
-			case "SUM":
-				break;
-
-			case "COUNT":
-				break;
+		for (const obKey in resultSoFar) {
+			const values = resultSoFar[obKey].map((obj: any) => obj[key]);
+			const result = calculateAggregate(values, applyBody);
+			combineResultWithObject(obKey, result, aggregateColumnName);
 		}
 	}
-	return resultSoFar;
+
+	function combineResultWithObject(obKey: string, result: number, aggColName: string): void {
+		const insightWithAggregate = { ...resultSoFar[obKey][0], [aggColName]: result };
+		collapsedResult.push(insightWithAggregate);
+	}
+
+	return collapsedResult;
+}
+
+// AVG and SUM have to use the Decimal package according to the spec
+function calculateAggregate(values: number[], applyBody: any): number {
+	const applyToken = Object.keys(applyBody)[0];
+	switch (applyToken) {
+		case "MAX":
+			return Math.max(...values);
+		case "MIN":
+			return Math.min(...values);
+		case "AVG": {
+			const total = values.reduce((sum, val) => sum.add(new Decimal(val)), new Decimal(0));
+			const avg = total.toNumber() / values.length;
+			return Number(avg.toFixed(DECIMAL_PLACE));
+		}
+		case "SUM": {
+			const total = values.reduce((sum, val) => sum.add(new Decimal(val)), new Decimal(0));
+			return Number(total.toFixed(DECIMAL_PLACE));
+		}
+		case "COUNT":
+			return new Set(values).size;
+		default:
+			return 0; // Default case to handle unexpected tokens
+	}
 }
