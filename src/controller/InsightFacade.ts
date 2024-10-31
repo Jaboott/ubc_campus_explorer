@@ -106,7 +106,7 @@ export default class InsightFacade implements IInsightFacade {
 		await fs.writeJSON(this.DATA_DIR + "existingDataset.json", existingDatasetJson);
 	}
 
-	public async performQuery(query: unknown): Promise<InsightResult[]> {
+	public async performQuery(query: any): Promise<InsightResult[]> {
 		await this.initFacade();
 		// const queryObject = Object(query);
 		const [datasetName, applyKey] = queryValidator(query, this.existingDataset);
