@@ -26,26 +26,24 @@ export function queryValidator(query: Content, existingDataset: Map<string, Insi
 		throw new InsightError("Query must include only WHERE, OPTIONS");
 	}
 
+	getDataset(query, existingDataset);
+
 	if (queryKeys.includes("TRANSFORMATIONS")) {
 		validKeys.push("TRANSFORMATIONS");
 		if (queryKeys.length !== validKeys.length || !validKeys.every((key) => queryKeys.includes(key))) {
 			throw new InsightError("Query must include only WHERE, OPTIONS, and TRANSFORMATIONS");
 		}
-		getDataset(query, existingDataset);
 		transformationsValidator(query.TRANSFORMATIONS!);
-		optionsValidator(query.OPTIONS, applyKeyList);
-	} else {
-		// moved getDataset here because datasetKind is needed to determine the valid mfield and sfield
-		// it could be written in a better way tho
-		getDataset(query, existingDataset);
-		optionsValidator(query.OPTIONS);
-		// Special case when WHERE has no filter is valid
-		if (Object.keys(query.WHERE).length !== 0) {
-			filterValidator(query.WHERE);
-		}
 	}
-	// TODO need to intersect applyKey with columns
-	return [datasetName, applyKeyList];
+
+	optionsValidator(query.OPTIONS);
+	// Special case when WHERE has no filter is valid
+	if (Object.keys(query.WHERE).length !== 0) {
+		filterValidator(query.WHERE);
+	}
+	// taking the intersection between column and applyKey
+	const intersection = applyKeyList.filter((applyKey) => query.OPTIONS.COLUMNS.includes(applyKey));
+	return [datasetName, intersection];
 }
 
 // the global fields persists between different tests...
@@ -184,16 +182,16 @@ function checkFilter(bodyObject: Object, type: string, filterType: string): void
 	}
 }
 
-function optionsValidator(options: OPTIONS, groupKey: string[] = []): void {
+function optionsValidator(options: OPTIONS): void {
 	const optionKeys = ["COLUMNS", "ORDER"];
-
 	// Check if query has COLUMNS and does not include any invalid key
 	if (!Object.hasOwn(options, "COLUMNS") || !Object.keys(options as Object).every((key) => optionKeys.includes(key))) {
 		throw new InsightError("OPTIONS must include only COLUMNS and ORDER");
 	}
 	// check that each field specified in the desired columns is valid
 	for (const column of options.COLUMNS) {
-		if (groupKey?.includes(column)) {
+		// skipping check if it exists on applyKeyList or groupList (already checked)
+		if (applyKeyList?.includes(column) || groupList?.includes(column)) {
 			continue;
 		}
 		const [id, field] = column.split("_");
@@ -201,13 +199,20 @@ function optionsValidator(options: OPTIONS, groupKey: string[] = []): void {
 
 		// Guarantee that key only has 1 _
 		if (!keyValidator.test(column) || !id || !field) {
-			// TODO something happened here
 			throw new InsightError(`Invalid key: ${column}`);
 		}
 		// id score should be implicitly checked by validating the key
 		if (!mfield.includes(field) && !sfield.includes(field)) {
 			throw new InsightError(`Invalid field: ${field} detected in columns`);
 		}
+	}
+
+	// checking for the restriction where column keys must be in at least GROUP or APPLY
+	if (
+		(applyKeyList.length !== 0 || groupList.length !== 0) &&
+		!options.COLUMNS.every((column: string) => applyKeyList?.includes(column) || groupList?.includes(column))
+	) {
+		throw new InsightError("Keys in COLUMNS must be in GROUP or APPLY when TRANSFORMATIONS is present");
 	}
 
 	// Checking if a field in ORDER is not in COLUMNS
@@ -247,7 +252,6 @@ function transformationsValidator(transformations: TRANSFORMATIONS): void {
 	applyValidator(transformations.APPLY);
 }
 
-// TODO might be able to set the dataset here
 function groupValidator(group: string[]): void {
 	if (!Array.isArray(group) || group.length === 0) {
 		throw new InsightError("GROUP must be a non-empty array.");
