@@ -289,7 +289,7 @@ describe("InsightFacade", function () {
 		});
 	});
 
-	describe.only("PerformQuery", function () {
+	describe("PerformQuery", function () {
 		/**
 		 * Loads the TestQuery specified in the test name and asserts the behaviour of performQuery.
 		 *
@@ -371,6 +371,8 @@ describe("InsightFacade", function () {
 			"[valid/sortMultipleKey.json] SELECT * WHERE avg > 99 ORDER BY sections_avg DESC, sections_year DESC",
 			checkQuery
 		);
+		// moved the test here because this uses section dataset and we did not add the dataset in the function below
+		it("[valid/allAggregations.json] Should return a result for a query containing all agreggations", checkQuery);
 		it("[invalid/resultTooLarge.json] Result too large error", checkQuery);
 		it("[invalid/invalid.json] Query missing WHERE", checkQuery);
 		it("[invalid/options.json] Query missing OPTIONS", checkQuery);
@@ -410,11 +412,12 @@ describe("InsightFacade", function () {
 	});
 });
 
-describe.only("InsightFacade Tests for C2 Features", function () {
+describe("InsightFacade Tests for C2 Features", function () {
 	let facade: IInsightFacade;
 
 	// Declare datasets used in tests. You should add more datasets like this!
 	let simpleCampus: string;
+	let simpleDupBuilding: string;
 	let ubcCampus: string;
 	let noBuildings: string;
 	let noIndex: string;
@@ -425,6 +428,7 @@ describe.only("InsightFacade Tests for C2 Features", function () {
 	before(async function () {
 		// This block runs once and loads the datasets.
 		simpleCampus = await getContentFromArchives("simpleCampus.zip");
+		simpleDupBuilding = await getContentFromArchives("simpleCampusDuplicateBuilding.zip");
 		ubcCampus = await getContentFromArchives("campus.zip");
 		noBuildings = await getContentFromArchives("campusNoBuildings.zip");
 		noIndex = await getContentFromArchives("campusNoIndex.zip");
@@ -488,6 +492,9 @@ describe.only("InsightFacade Tests for C2 Features", function () {
 			const result = facade.addDataset("missingFields", missingFields, InsightDatasetKind.Rooms);
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
+
+		// duplicate buildings on table
+		// many invalids with a single valid buildings
 	});
 
 	describe("PerformQuery (RoomDataset)", function () {
@@ -528,6 +535,7 @@ describe.only("InsightFacade Tests for C2 Features", function () {
 			// Will *fail* if there is a problem reading ANY dataset.
 			const loadDatasetPromises: Promise<string[]>[] = [
 				facade.addDataset("rooms", ubcCampus, InsightDatasetKind.Rooms),
+				facade.addDataset("dup", simpleDupBuilding, InsightDatasetKind.Rooms),
 			];
 
 			try {
@@ -542,12 +550,64 @@ describe.only("InsightFacade Tests for C2 Features", function () {
 		});
 
 		it("[valid/rqAllKeys.json] SELECT * WHERE room_seats < 7", checkQuery);
-		// it("[valid/rqBasic.json] SELECT rooms_shortname, rooms_fullname, rooms_seats WHERE rooms_seats > 300", checkQuery);
+		it("[valid/rqBasic.json] SELECT rooms_shortname, rooms_fullname, rooms_seats WHERE rooms_seats > 300", checkQuery);
 		it(
-			"[valid/rqWithAggregation.json] SELECT rooms_shortname, maxSeats WHERE rooms_furniture IS Tables AND rooms_seats > 300 GROUP BY rooms_shortname",
+			"[valid/rqComplex.json] SELECT rooms_shortname, MAX(room_seats) WHERE rooms_furniture IS 'Tables' AND rooms_seats > 300 GROUP BY rooms_shortname",
 			checkQuery
 		);
+		it("[valid/aggAvg.json] SELECT rooms_shortname, AVG(rooms_seats) WHERE rooms_fullname IS 'A*'", checkQuery);
+		it("[valid/aggCount.json] SELECT rooms_shortname, COUNT(*) WHERE rooms_fullname IS 'A*'", checkQuery);
+		it("[valid/aggMin.json] SELECT rooms_shortname, MIN(rooms_seats) WHERE rooms_fullname IS 'A*'", checkQuery);
+		it("[valid/aggMax.json] SELECT rooms_shortname, MAX(rooms_seats) WHERE rooms_fullname IS 'A*'", checkQuery);
+		it("[valid/aggSum.json] SELECT rooms_shortname, SUM(rooms_seats) WHERE rooms_fullname IS 'A*'", checkQuery);
+		it(
+			"[valid/simpleGrouping.json] SELECT rooms_shortname, rooms_furniture WHERE rooms_shortname IS 'B*' GROUP BY rooms_shortname",
+			checkQuery
+		);
+		it(
+			"[valid/multipleGroupings.json] SELECT rooms_shortname, rooms_furniture, MAX(rooms_seats) WHERE rooms_shortname IS 'BUCH' GROUP BY rooms_shortname, rooms_furniture",
+			checkQuery
+		);
+		it(
+			"[valid/rqDuplicateBuilding.json] Should create duplicate entries if index table has multiple copies of a building",
+			checkQuery
+		);
+		it("[valid/rqTwoAggregations.json] Should support >1 aggregations", checkQuery);
+		it(
+			"[valid/duplicateAggregation.json] Should be able to run the same aggregation multiple times as long as column name is different",
+			checkQuery
+		);
+
 		it("[invalid/rqInvalidWhereKey.json] Room query using a Section key in WHERE clause", checkQuery);
 		it("[invalid/rqInvalidOptionsKeys.json] Room query using Section keys in OPTIONS", checkQuery);
+		it("[invalid/invalidApplyKey.json] Room query that uses underscore in applyKey", checkQuery);
+		it(
+			"[invalid/invalidKeyCol.json] Keys in COLUMNS must be in GROUP or APPLY when TRANSFORMATIONS is present",
+			checkQuery
+		);
+		it("[invalid/emptyGroup.json] GROUP must be a non-empty array", checkQuery);
+		it("[invalid/noGroup.json] TRANSFORMATIONS missing GROUP", checkQuery);
+		it("[invalid/applyNotObj.json] Apply body must be object", checkQuery);
+		it("[invalid/noApply.json] TRANSFORMATIONS missing APPLY", checkQuery);
+		it("[invalid/invalidApplyToken.json] Invalid transformation operator", checkQuery);
+		it(
+			"[invalid/columnKeyMissingInGroup.json] All column keys must be in GROUP/APPLY when TRANSFORMATIONS is present",
+			checkQuery
+		);
+		it("[invalid/emptyApplyKey.json] Apply key cannot be empty string", checkQuery);
+		it("[invalid/multipleApplyKeys.json] A single apply rule should only have 1 key", checkQuery);
+		it("[invalid/nonNumericKeyAvg.json] Invalid key type -- Cannot use non-numeric key on avg", checkQuery);
+		it("[invalid/nonNumericKeySum.json] Invalid key type -- Cannot use non-numeric key on sum", checkQuery);
+		it("[invalid/nonNumericKeyMin.json] Invalid key type -- Cannot use non-numeric key on min", checkQuery);
+		it("[invalid/nonNumericKeyMax.json] Invalid key type -- Cannot use non-numeric key on max", checkQuery);
+		it(
+			"[invalid/emptyStringDataset.json] Referenced dataset cannot be empty string (dataset empty in COLUMNS and TRANSFORMATIONS)",
+			checkQuery
+		);
+		it(
+			"[invalid/multipleDatasetsReferenced.json] Multiple datasets referenced in COLUMNS and TRANSFORMATIONS -- Cannot query >1 dataset",
+			checkQuery
+		);
+		it("[invalid/duplicateAggregationKey.json] Multiple aggregations cannot have the same name", checkQuery);
 	});
 });

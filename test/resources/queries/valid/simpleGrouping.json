@@ -1,0 +1,33 @@
+{
+    "title": "SELECT rooms_shortname, rooms_furniture WHERE rooms_shortname IS 'B*' GROUP BY rooms_shortname",
+    "input": {
+        "WHERE": {
+          "IS": {
+            "rooms_shortname": "B*"
+          }
+        },
+        "OPTIONS": {
+          "COLUMNS": [
+            "rooms_shortname"
+          ]
+        },
+        "TRANSFORMATIONS": {
+          "GROUP": [
+            "rooms_shortname"
+          ],
+          "APPLY": []
+        }
+      },
+    "errorExpected": false,
+    "expected": [
+        {
+            "rooms_shortname": "BIOL"
+        },
+        {
+            "rooms_shortname": "BRKX"
+        },
+        {
+            "rooms_shortname": "BUCH"
+        }
+    ]
+}

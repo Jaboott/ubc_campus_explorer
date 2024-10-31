@@ -1,0 +1,27 @@
+{
+    "title": "Invalid key type -- Cannot use non-numeric key on max",
+    "input": {
+      "WHERE": {
+      },
+      "OPTIONS": {
+        "COLUMNS": [
+          "rooms_shortname"
+        ]
+      },
+      "TRANSFORMATIONS": {
+        "GROUP": [
+          "rooms_shortname"
+        ],
+        "APPLY": [
+          {
+            "test": {
+              "MAX": "rooms_furniture"
+            }
+          }
+        ]
+      }
+    },
+    "errorExpected": true,
+    "expected": "InsightError"
+  }
+  

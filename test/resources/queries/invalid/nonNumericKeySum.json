@@ -1,0 +1,27 @@
+{
+    "title": "Invalid key type -- Cannot use non-numeric key on sum",
+    "input": {
+      "WHERE": {
+      },
+      "OPTIONS": {
+        "COLUMNS": [
+          "rooms_shortname"
+        ]
+      },
+      "TRANSFORMATIONS": {
+        "GROUP": [
+          "rooms_shortname"
+        ],
+        "APPLY": [
+          {
+            "test": {
+              "SUM": "rooms_furniture"
+            }
+          }
+        ]
+      }
+    },
+    "errorExpected": true,
+    "expected": "InsightError"
+  }
+  

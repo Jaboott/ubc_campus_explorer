@@ -1,0 +1,34 @@
+{
+    "title": "Apply rule should only have 1 key",
+    "input": {
+        "WHERE": {
+            "IS": {
+                "rooms_shortname": "BUCH"
+            }
+        },
+        "OPTIONS": {
+            "COLUMNS": [
+                "rooms_shortname",
+                "rooms_furniture"
+            ]
+        },
+        "TRANSFORMATIONS": {
+            "GROUP": [
+                "rooms_shortname",
+                "rooms_furniture"
+            ],
+            "APPLY": [
+                {
+                    "max": {
+                        "MAX": "rooms_seats"
+                    },
+                    "min": {
+                        "MIN": "rooms_seats"
+                    }
+                }
+            ]
+        }
+    },
+    "errorExpected": true,
+    "expected": "InsightError"
+}

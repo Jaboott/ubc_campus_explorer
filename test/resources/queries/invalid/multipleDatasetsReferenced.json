@@ -1,0 +1,26 @@
+{
+    "title": "Multiple datasets referenced in COLUMNS and TRANSFORMATIONS",
+    "input": {
+      "WHERE": {
+        "IS": {
+          "rooms_shortname": "BUCH"
+        }
+      },
+      "OPTIONS": {
+        "COLUMNS": [
+          "rooms_shortname",
+          "dup_shortname"
+        ]
+      },
+      "TRANSFORMATIONS": {
+        "GROUP": [
+          "rooms_shortname",
+          "dup_shortname"
+        ],
+        "APPLY": []
+      }
+    },
+    "errorExpected": true,
+    "expected": "InsightError"
+  }
+  

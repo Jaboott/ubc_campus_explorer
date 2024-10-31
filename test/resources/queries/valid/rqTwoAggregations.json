@@ -1,0 +1,90 @@
+{
+    "title": "SELECT rooms_shortname, AVG(rooms_seats) WHERE rooms_fullname IS 'A*'",
+    "input": {
+        "WHERE": {
+            "IS": {
+                "rooms_shortname": "BUCH"
+            }
+        },
+        "OPTIONS": {
+            "COLUMNS": [
+                "rooms_shortname",
+                "rooms_furniture",
+                "rooms_lat",
+                "max",
+                "distinctLat"
+            ]
+        },
+        "TRANSFORMATIONS": {
+            "GROUP": [
+                "rooms_shortname",
+                "rooms_furniture",
+                "rooms_lat"
+            ],
+            "APPLY": [
+                {
+                    "max": {
+                        "MAX": "rooms_seats"
+                    }
+                },
+                {
+                    "distinctLat": {
+                        "COUNT": "rooms_lat"
+                    }
+                }
+            ]
+        }
+    },
+    "errorExpected": false,
+    "expected": [
+        {
+            "rooms_shortname": "BUCH",
+            "rooms_furniture": "Classroom-Fixed Tablets",
+            "rooms_lat": 49.26826,
+            "max": 275,
+            "distinctLat": 1
+        },
+        {
+            "rooms_shortname": "BUCH",
+            "rooms_furniture": "Classroom-Fixed Tables/Fixed Chairs",
+            "rooms_lat": 49.26826,
+            "max": 108,
+            "distinctLat": 1
+        },
+        {
+            "rooms_shortname": "BUCH",
+            "rooms_furniture": "Classroom-Movable Tables & Chairs",
+            "rooms_lat": 49.26826,
+            "max": 42,
+            "distinctLat": 1
+        },
+        {
+            "rooms_shortname": "BUCH",
+            "rooms_furniture": "Classroom-Fixed Tables/Moveable Chairs",
+            "rooms_lat": 49.26826,
+            "max": 78,
+            "distinctLat": 1
+        },
+        {
+            "rooms_shortname": "BUCH",
+            "rooms_furniture": "Classroom-Movable Tablets",
+            "rooms_lat": 49.26826,
+            "max": 50,
+            "distinctLat": 1
+        },
+        {
+            "rooms_shortname": "BUCH",
+            "rooms_furniture": "Classroom-Fixed Tables/Movable Chairs",
+            "rooms_lat": 49.26826,
+            "max": 78,
+            "distinctLat": 1
+        },
+        {
+            "rooms_shortname": "BUCH",
+            "rooms_furniture": "Classroom-Moveable Tables & Chairs",
+            "rooms_lat": 49.26826,
+            "max": 24,
+            "distinctLat": 1
+        }
+    ]
+}

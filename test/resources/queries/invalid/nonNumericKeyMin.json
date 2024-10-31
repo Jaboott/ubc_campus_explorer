@@ -1,0 +1,27 @@
+{
+    "title": "Invalid key type -- Cannot use non-numeric key on min",
+    "input": {
+      "WHERE": {
+      },
+      "OPTIONS": {
+        "COLUMNS": [
+          "rooms_shortname"
+        ]
+      },
+      "TRANSFORMATIONS": {
+        "GROUP": [
+          "rooms_shortname"
+        ],
+        "APPLY": [
+          {
+            "test": {
+              "MIN": "rooms_furniture"
+            }
+          }
+        ]
+      }
+    },
+    "errorExpected": true,
+    "expected": "InsightError"
+  }
+  

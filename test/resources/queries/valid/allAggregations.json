@@ -1,0 +1,88 @@
+{
+    "title": "SELECT rooms_shortname, AVG(rooms_seats) WHERE rooms_fullname IS 'A*'",
+    "input": {
+        "WHERE": {
+            "AND": [
+                {
+                    "GT": {
+                        "sections_avg": 85
+                    }
+                },
+                {
+                    "IS": {
+                        "sections_dept": "bio*"
+                    }
+                }
+            ]
+        },
+        "OPTIONS": {
+            "COLUMNS": [
+                "sections_dept",
+                "count",
+                "max",
+                "avg",
+                "min",
+                "sum"
+            ]
+        },
+        "TRANSFORMATIONS": {
+            "GROUP": [
+                "sections_dept"
+            ],
+            "APPLY": [
+                {
+                    "avg": {
+                        "AVG": "sections_avg"
+                    }
+                },
+                {
+                    "max": {
+                        "MAX": "sections_avg"
+                    }
+                },
+                {
+                    "count": {
+                        "COUNT": "sections_avg"
+                    }
+                },
+                {
+                    "sum": {
+                        "SUM": "sections_avg"
+                    }
+                },
+                {
+                    "min": {
+                        "MIN": "sections_avg"
+                    }
+                }
+            ]
+        }
+    },
+    "errorExpected": false,
+    "expected": [
+        {
+            "sections_dept": "bioc",
+            "count": 37,
+            "max": 90.57,
+            "avg": 87.55,
+            "min": 85.13,
+            "sum": 5515.74
+        },
+        {
+            "sections_dept": "biof",
+            "count": 11,
+            "max": 93.45,
+            "avg": 89.77,
+            "min": 87.33,
+            "sum": 2064.63
+        },
+        {
+            "sections_dept": "biol",
+            "count": 76,
+            "max": 94.33,
+            "avg": 87.7,
+            "min": 85.09,
+            "sum": 13593.02
+        }
+    ]
+}

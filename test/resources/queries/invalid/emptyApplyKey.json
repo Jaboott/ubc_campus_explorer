@@ -1,0 +1,31 @@
+{
+    "title": "Apply key cannot be empty string",
+    "input": {
+        "WHERE": {
+            "IS": {
+                "rooms_shortname": "BUCH"
+            }
+        },
+        "OPTIONS": {
+            "COLUMNS": [
+                "rooms_shortname",
+                "rooms_furniture"
+            ]
+        },
+        "TRANSFORMATIONS": {
+            "GROUP": [
+                "rooms_shortname",
+                "rooms_furniture"
+            ],
+            "APPLY": [
+                {
+                    "": {
+                        "MAX": "rooms_seats"
+                    }
+                }
+            ]
+        }
+    },
+    "errorExpected": true,
+    "expected": "InsightError"
+}

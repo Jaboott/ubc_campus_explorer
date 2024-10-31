@@ -1,0 +1,30 @@
+{
+    "title": "Query with empty string as dataset (missing dataset name)",
+    "input": {
+        "WHERE": {
+            "IS": {
+                "rooms_shortname": "BUCH"
+            }
+        },
+        "OPTIONS": {
+            "COLUMNS": [
+                "_shortname",
+                "max"
+            ]
+        },
+        "TRANSFORMATIONS": {
+            "GROUP": [
+                "_shortname"
+            ],
+            "APPLY": [
+                {
+                    "max": {
+                        "MAX": "rooms_seats"
+                    }
+                }
+            ]
+        }
+    },
+    "errorExpected": true,
+    "expected": "InsightError"
+}

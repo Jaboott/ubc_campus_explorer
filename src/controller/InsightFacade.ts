@@ -7,8 +7,9 @@ import {
 	NotFoundError,
 } from "./IInsightFacade";
 import { idValidator } from "../datasetProcessor/sectionProcessingHandler";
-import { handleOptions, handleWhere, queryValidator } from "../queryEngine/queryHandler";
+import { handleOptions, handleWhere } from "../queryEngine/queryHandler";
 import { dataToInsightKind, readData, readExistingDataset } from "../datasetProcessor/processingHandler";
+import { queryValidator } from "../queryEngine/queryValidator";
 
 const fs = require("fs-extra");
 
@@ -105,11 +106,11 @@ export default class InsightFacade implements IInsightFacade {
 		await fs.writeJSON(this.DATA_DIR + "existingDataset.json", existingDatasetJson);
 	}
 
-	public async performQuery(query: unknown): Promise<InsightResult[]> {
+	public async performQuery(query: any): Promise<InsightResult[]> {
 		await this.initFacade();
 		// const queryObject = Object(query);
-		queryValidator(query, this.existingDataset);
-		const resultSoFar = await handleWhere(query);
+		const [datasetName, applyKey] = queryValidator(query, this.existingDataset);
+		const resultSoFar = await handleWhere(query, datasetName, applyKey);
 		return handleOptions(query, resultSoFar);
 	}
 

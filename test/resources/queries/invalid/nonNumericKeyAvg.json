@@ -1,0 +1,26 @@
+{
+    "title": "Invalid key type -- Cannot use non-numeric key on avg",
+    "input": {
+        "WHERE": {
+        },
+        "OPTIONS": {
+          "COLUMNS": [
+            "rooms_shortname"
+            ]
+        },
+        "TRANSFORMATIONS": {
+          "GROUP": [
+            "rooms_shortname"
+          ],
+          "APPLY": [
+            {
+              "test": {
+                "AVG": "rooms_furniture"
+              }
+            }
+          ]
+        }
+      },
+    "errorExpected": true,
+    "expected": "InsightError"
+}

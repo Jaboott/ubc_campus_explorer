@@ -1,0 +1,57 @@
+{
+	"title": "SELECT rooms_shortname, MIN(rooms_seats) WHERE rooms_fullname IS 'A*'",
+	"input": {
+        "WHERE": {
+            "AND": [
+                {
+                    "IS": {
+                        "rooms_fullname": "A*"
+                    }
+                }
+            ]
+        },
+        "OPTIONS": {
+            "COLUMNS": [
+                "rooms_shortname",
+                "minSeats"
+            ],
+            "ORDER": {
+                "dir": "UP",
+                "keys": [
+                    "minSeats"
+                ]
+            }
+        },
+        "TRANSFORMATIONS": {
+            "GROUP": [
+                "rooms_shortname"
+            ],
+            "APPLY": [
+                {
+                    "minSeats": {
+                        "MIN": "rooms_seats"
+                    }
+                }
+            ]
+        }
+    },
+	"errorExpected": false,
+	"expected": [
+        {
+          "rooms_shortname": "ALRD",
+          "minSeats": 20
+        },
+        {
+          "rooms_shortname": "AUDX",
+          "minSeats": 20
+        },
+        {
+          "rooms_shortname": "ANSO",
+          "minSeats": 26
+        },
+        {
+          "rooms_shortname": "AERL",
+          "minSeats": 144
+        }
+      ]
+}
