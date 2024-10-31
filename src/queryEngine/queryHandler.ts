@@ -1,8 +1,10 @@
 import { InsightError, InsightResult, ResultTooLargeError } from "../controller/IInsightFacade";
 import * as fs from "fs";
+import Decimal from "decimal.js";
 import { Content } from "./queryObjectInterface";
 
 const MAX_RESULT = 5000;
+const DECIMAL_PLACE = 2;
 let datasetName = "";
 let applyKey = "";
 
@@ -174,9 +176,8 @@ export function doGroupings(groupClause: string[], resultSoFar: InsightResult[])
 }
 
 // shortened with chatGPT
-export function doCalculations(applyClause: any, resultSoFar: any): InsightResult[] {
+function doCalculations(applyClause: any, resultSoFar: any): InsightResult[] {
 	const collapsedResult: InsightResult[] = [];
-
 	for (const apply of applyClause) {
 		const aggregateColumnName = Object.keys(apply)[0];
 		const applyBody = apply[aggregateColumnName];
@@ -185,26 +186,7 @@ export function doCalculations(applyClause: any, resultSoFar: any): InsightResul
 		for (const obKey in resultSoFar) {
 			const values = resultSoFar[obKey].map((obj: any) => obj[key]);
 			const result = calculateAggregate(values, applyBody);
-
 			combineResultWithObject(obKey, result, aggregateColumnName);
-		}
-	}
-
-	function calculateAggregate(values: number[], applyBody: any): number {
-		const applyToken = Object.keys(applyBody)[0];
-		switch (applyToken) {
-			case "MAX":
-				return Math.max(...values);
-			case "MIN":
-				return Math.min(...values);
-			case "AVG":
-				return values.reduce((total, val) => total + val, 0) / values.length;
-			case "SUM":
-				return values.reduce((total, val) => total + val, 0);
-			case "COUNT":
-				return new Set(values).size;
-			default:
-				return 0; // Default case to handle unexpected tokens
 		}
 	}
 
@@ -214,4 +196,28 @@ export function doCalculations(applyClause: any, resultSoFar: any): InsightResul
 	}
 
 	return collapsedResult;
+}
+
+// AVG and SUM have to use the Decimal package according to the spec
+function calculateAggregate(values: number[], applyBody: any): number {
+	const applyToken = Object.keys(applyBody)[0];
+	switch (applyToken) {
+		case "MAX":
+			return Math.max(...values);
+		case "MIN":
+			return Math.min(...values);
+		case "AVG": {
+			const total = values.reduce((sum, val) => sum.add(new Decimal(val)), new Decimal(0));
+			const avg = total.toNumber() / values.length;
+			return Number(avg.toFixed(DECIMAL_PLACE));
+		}
+		case "SUM": {
+			const total = values.reduce((sum, val) => sum.add(new Decimal(val)), new Decimal(0));
+			return Number(total.toFixed(DECIMAL_PLACE));
+		}
+		case "COUNT":
+			return new Set(values).size;
+		default:
+			return 0; // Default case to handle unexpected tokens
+	}
 }
