@@ -178,21 +178,22 @@ export function doGroupings(groupClause: string[], resultSoFar: InsightResult[])
 // shortened with chatGPT
 function doCalculations(applyClause: any, resultSoFar: any): InsightResult[] {
 	const collapsedResult: InsightResult[] = [];
-	for (const apply of applyClause) {
-		const aggregateColumnName = Object.keys(apply)[0];
-		const applyBody = apply[aggregateColumnName];
-		const key = applyBody[Object.keys(applyBody)[0]].split("_")[1];
 
-		for (const obKey in resultSoFar) {
-			const values = resultSoFar[obKey].map((obj: any) => obj[key]);
+	for (const obKey in resultSoFar) {
+		const resultObject: any = { ...resultSoFar[obKey][0] };
+
+		for (const apply of applyClause) {
+			const aggregateColumnName = Object.keys(apply)[0];
+			const applyBody = apply[aggregateColumnName];
+			const key = applyBody[Object.keys(applyBody)[0]].split("_")[1];
+
+			const values = resultSoFar[obKey].map((obj: any) => obj[key]); // get a list of values from a specific column
 			const result = calculateAggregate(values, applyBody);
-			combineResultWithObject(obKey, result, aggregateColumnName);
-		}
-	}
 
-	function combineResultWithObject(obKey: string, result: number, aggColName: string): void {
-		const insightWithAggregate = { ...resultSoFar[obKey][0], [aggColName]: result };
-		collapsedResult.push(insightWithAggregate);
+			resultObject[aggregateColumnName] = result; // create key/vlue pair with aggregate column name and result
+		}
+
+		collapsedResult.push(resultObject); // push collapsed result after calculating all aggregations
 	}
 
 	return collapsedResult;

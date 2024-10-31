@@ -372,7 +372,7 @@ describe("InsightFacade", function () {
 			checkQuery
 		);
 		// moved the test here because this uses section dataset and we did not add the dataset in the function below
-		it.only("[valid/allAggregations.json] Should return a result for a query containing all agreggations", checkQuery);
+		it("[valid/allAggregations.json] Should return a result for a query containing all agreggations", checkQuery);
 		it("[invalid/resultTooLarge.json] Result too large error", checkQuery);
 		it("[invalid/invalid.json] Query missing WHERE", checkQuery);
 		it("[invalid/options.json] Query missing OPTIONS", checkQuery);
@@ -497,7 +497,7 @@ describe("InsightFacade Tests for C2 Features", function () {
 		// many invalids with a single valid buildings
 	});
 
-	describe.only("PerformQuery (RoomDataset)", function () {
+	describe("PerformQuery (RoomDataset)", function () {
 		async function checkQuery(this: Mocha.Context): Promise<any> {
 			if (!this.test) {
 				throw new Error(
