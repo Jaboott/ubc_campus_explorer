@@ -117,7 +117,7 @@ function selectColumns(columns: string[], resultSoFar: InsightResult[]): Insight
 		// loop through the column array
 		columns.forEach((column) => {
 			datasetValidator(column, applyKey);
-			const key = column.split("_").slice(1).join("_"); // chatgpt generated to extract the string behind underscore
+			const key = column.split("_").slice(1).join("_") || column; // chatgpt generated to extract the string behind underscore. '|| column' part is used to account for aggregated column
 			selectedResult[column] = item[key]; // column comes with datasetName but key does not
 		});
 		return selectedResult;
@@ -155,34 +155,49 @@ export function doGroupings(groupClause: string[], resultSoFar: InsightResult[])
 		return result;
 	}, {});
 
-	// console.log(groupedData);
+	// console.log("GROUPED: ", groupedData);
 	return groupedData;
 }
 
-// TODO
+// shortened with chatGPT
 export function doCalculations(applyClause: any, resultSoFar: any): InsightResult[] {
+	const collapsedResult: InsightResult[] = [];
+
 	for (const apply of applyClause) {
-		applyKey = Object.keys(apply)[0];
-		const applyBody = apply[applyKey];
-		const applyToken = Object.keys(applyBody)[0];
-		const key = applyBody[applyToken];
-		switch (applyToken) {
-			case "MAX":
-				console.log(key);
-				break;
+		const aggregateColumnName = Object.keys(apply)[0];
+		const applyBody = apply[aggregateColumnName];
+		const key = applyBody[Object.keys(applyBody)[0]].split("_")[1];
 
-			case "MIN":
-				break;
+		for (const obKey in resultSoFar) {
+			const values = resultSoFar[obKey].map((obj: any) => obj[key]);
+			const result = calculateAggregate(values, applyBody);
 
-			case "AVG":
-				break;
-
-			case "SUM":
-				break;
-
-			case "COUNT":
-				break;
+			combineResultWithObject(obKey, result, aggregateColumnName);
 		}
 	}
-	return resultSoFar;
+
+	function calculateAggregate(values: number[], applyBody: any): number {
+		const applyToken = Object.keys(applyBody)[0];
+		switch (applyToken) {
+			case "MAX":
+				return Math.max(...values);
+			case "MIN":
+				return Math.min(...values);
+			case "AVG":
+				return values.reduce((total, val) => total + val, 0) / values.length;
+			case "SUM":
+				return values.reduce((total, val) => total + val, 0);
+			case "COUNT":
+				return new Set(values).size;
+			default:
+				return 0; // Default case to handle unexpected tokens
+		}
+	}
+
+	function combineResultWithObject(obKey: string, result: number, aggColName: string): void {
+		const insightWithAggregate = { ...resultSoFar[obKey][0], [aggColName]: result };
+		collapsedResult.push(insightWithAggregate);
+	}
+
+	return collapsedResult;
 }
