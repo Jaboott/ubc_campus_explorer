@@ -16,9 +16,10 @@ export interface FILTER {
 export interface Content {
 	WHERE: FILTER;
 	OPTIONS: OPTIONS;
-	// TRANSFORMATIONS?: TRANSFORMATIONS;
+	TRANSFORMATIONS?: TRANSFORMATIONS;
 }
 
-// interface TRANSFORMATIONS {
-// 	// TODO
-// }
+export interface TRANSFORMATIONS {
+	GROUP: string[];
+	APPLY: Record<string, Record<string, string>>[];
+}

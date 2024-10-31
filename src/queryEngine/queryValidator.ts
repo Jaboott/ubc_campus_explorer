@@ -1,16 +1,18 @@
 import { InsightDatasetKind, InsightError } from "../controller/IInsightFacade";
-import { Content, FILTER, OPTIONS } from "./queryObjectInterface";
+import { Content, FILTER, OPTIONS, TRANSFORMATIONS } from "./queryObjectInterface";
 
 let datasetName = "";
 let datasetKind = "";
 let mfield: string[] = [];
 let sfield: string[] = [];
-let applyKey = "";
+let numericalField: string[] = [];
+let applyKeyList: string[] = [];
+let groupList: string[] = [];
 
-export function queryValidator(query: any, existingDataset: Map<string, InsightDatasetKind>): string[] {
-	const queryContent = query as Content;
+export function queryValidator(query: Content, existingDataset: Map<string, InsightDatasetKind>): string[] {
 	const validKeys = ["WHERE", "OPTIONS"];
-	const queryKeys = Object.keys(queryContent);
+	const queryKeys = Object.keys(query);
+	resetFields();
 
 	if (!queryKeys.includes("WHERE") || !queryKeys.includes("OPTIONS")) {
 		throw new InsightError("Query must include WHERE and OPTIONS");
@@ -25,20 +27,78 @@ export function queryValidator(query: any, existingDataset: Map<string, InsightD
 	}
 
 	if (queryKeys.includes("TRANSFORMATIONS")) {
-		applyKey = transformationsValidator(query);
-		getDataset(query, existingDataset); // placeholder here - TODO check if the query is only referencing 1 dataset
-		optionsValidator(queryContent.OPTIONS, applyKey);
+		validKeys.push("TRANSFORMATIONS");
+		if (queryKeys.length !== validKeys.length || !validKeys.every((key) => queryKeys.includes(key))) {
+			throw new InsightError("Query must include only WHERE, OPTIONS, and TRANSFORMATIONS");
+		}
+		getDataset(query, existingDataset);
+		transformationsValidator(query.TRANSFORMATIONS!);
+		optionsValidator(query.OPTIONS, "applyKeyList"); // TODO change this later
 	} else {
 		// moved getDataset here because datasetKind is needed to determine the valid mfield and sfield
 		// it could be written in a better way tho
 		getDataset(query, existingDataset);
-		optionsValidator(queryContent.OPTIONS);
+		optionsValidator(query.OPTIONS);
 		// Special case when WHERE has no filter is valid
-		if (Object.keys(queryContent.WHERE).length !== 0) {
-			filterValidator(queryContent.WHERE);
+		if (Object.keys(query.WHERE).length !== 0) {
+			filterValidator(query.WHERE);
 		}
 	}
-	return [datasetName, applyKey];
+
+	// TODO need to intersect applyKey with columns
+	return [datasetName, "applyKeyList"]; // TODO change this later
+}
+
+// the global fields persists between different tests...
+function resetFields(): void {
+	datasetName = "";
+	datasetKind = "";
+	mfield = [];
+	sfield = [];
+	numericalField = [];
+	applyKeyList = [];
+	groupList = [];
+}
+
+function getDataset(content: Content, existingDataset: Map<string, InsightDatasetKind>): void {
+	// chatgpt generated regex expression to split for _
+	const regex = new RegExp(/^([^_]+)/);
+	const contentOptions = content.OPTIONS;
+	// had to check column is not empty before getting the datasetName
+	if (Object.keys(contentOptions).length === 0) {
+		throw new InsightError("OPTIONS can't be left empty");
+	}
+	if (!Object.keys(contentOptions).includes("COLUMNS")) {
+		throw new InsightError("COLUMNS must be included");
+	}
+	if (contentOptions.COLUMNS.length === 0) {
+		throw new InsightError("COLUMNS must be a non-empty array");
+	}
+	if (!datasetName) {
+		const match = contentOptions.COLUMNS[0].match(regex); // get the dataset used in columns
+		const datasetNameTransformations = datasetName
+			? datasetName
+			: content?.TRANSFORMATIONS?.GROUP?.[0]?.split("_")?.[0];
+		const datasetNameColumns = match ? match[1] : "";
+		// set the name to name from TRANSFORMATIONS if possible, if not then from COLUMN
+		datasetName = datasetNameTransformations || datasetNameColumns;
+	}
+
+	// this also takes care of the above statement for force finding datasetName
+	if (!existingDataset.has(datasetName)) {
+		throw new InsightError("Dataset not found");
+	}
+
+	datasetKind = existingDataset.get(datasetName)!;
+	if (datasetKind === InsightDatasetKind.Sections) {
+		mfield = ["avg", "pass", "fail", "audit", "year"];
+		sfield = ["dept", "id", "instructor", "title", "uuid"];
+		numericalField = ["year", "avg", "pass", "fail", "audit"];
+	} else if (datasetKind === InsightDatasetKind.Rooms) {
+		mfield = ["lat", "lon", "seats"];
+		sfield = ["fullname", "shortname", "number", "name", "address", "type", "furniture", "href"];
+		numericalField = ["lat", "lon", "seats"];
+	}
 }
 
 function filterValidator(filter: FILTER): void {
@@ -82,6 +142,7 @@ function filterValidator(filter: FILTER): void {
 	}
 }
 
+// this functions expect getDataset already ran (depends on set field)
 function checkKey(key: string, type: string): void {
 	// chatgpt generated to check for string with only 1 _ and not empty or white space only
 	const keyValidator = new RegExp(/^(?=\S)(?=[^_]*_)[^_]*_[^_]*$/);
@@ -90,25 +151,26 @@ function checkKey(key: string, type: string): void {
 		throw new InsightError("Invalid key");
 	}
 
-	const id = key.split("_")[0];
-	const field = key.split("_")[1];
+	const [id, field] = key.split("_");
 
 	// If id or field is empty
 	if (!id || !field) {
 		throw new InsightError(`Invalid key ${key}`);
 	}
 
-	switch (type) {
-		case "mkey":
-			if (!mfield.includes(field)) {
-				throw new InsightError("Invalid mkey");
-			}
-			break;
-		case "skey":
-			if (!sfield.includes(field)) {
-				throw new InsightError("Invalid skey");
-			}
-			break;
+	if (id !== datasetName) {
+		throw new InsightError("Cannot reference multiple dataset");
+	}
+
+	const fieldTypes: any = {
+		mkey: mfield,
+		skey: sfield,
+		either: [...mfield, ...sfield],
+		numerical: numericalField,
+	};
+
+	if (!fieldTypes[type]?.includes(field)) {
+		throw new InsightError(`Invalid ${type === "numerical" ? "key (not numerical)" : type}`);
 	}
 }
 
@@ -123,6 +185,7 @@ function checkFilter(bodyObject: Object, type: string, filterType: string): void
 	}
 }
 
+// TODO need to make sure all COLUMN keys must correspond to one of the GROUP keys or to applykeys defined in the APPLY block
 function optionsValidator(options: OPTIONS, groupKey = ""): void {
 	const optionKeys = ["COLUMNS", "ORDER"];
 
@@ -135,12 +198,12 @@ function optionsValidator(options: OPTIONS, groupKey = ""): void {
 		if (groupKey && column === groupKey) {
 			continue;
 		}
-		const id = column.split("_")[0];
-		const field = column.split("_")[1]; // gets part of column name after "_" (the field)
+		const [id, field] = column.split("_");
 		const keyValidator = new RegExp(/^(?=\S)(?=[^_]*_)[^_]*_[^_]*$/);
 
 		// Guarantee that key only has 1 _
 		if (!keyValidator.test(column) || !id || !field) {
+			// TODO something happened here
 			throw new InsightError(`Invalid key: ${column}`);
 		}
 		// id score should be implicitly checked by validating the key
@@ -175,39 +238,8 @@ function validateDir(order: { dir: string; keys: string[] }, column: string[]): 
 	}
 }
 
-function getDataset(content: any, existingDataset: Map<string, InsightDatasetKind>): void {
-	content as Content;
-	const regex = new RegExp(/^([^_]+)/); // chatgpt generated regex expression
-
-	// had to check column is not empty before getting the datasetName
-	if (Object.keys(content.OPTIONS).length === 0) {
-		throw new InsightError("OPTIONS can't be left empty");
-	}
-	if (!Object.keys(content.OPTIONS).includes("COLUMNS")) {
-		throw new InsightError("COLUMNS must be included");
-	}
-	if (content.OPTIONS.COLUMNS.length === 0) {
-		throw new InsightError("COLUMNS must be a non-empty array");
-	}
-	const match = content.OPTIONS.COLUMNS[0].match(regex); // get the dataset used in columns
-	datasetName = match ? match[1] : ""; // set the global variable
-	if (!existingDataset.has(datasetName)) {
-		throw new InsightError("Dataset not found");
-	}
-
-	datasetKind = existingDataset.get(datasetName)!;
-	if (datasetKind === InsightDatasetKind.Sections) {
-		mfield = ["avg", "pass", "fail", "audit", "year"];
-		sfield = ["dept", "id", "instructor", "title", "uuid"];
-	} else if (datasetKind === InsightDatasetKind.Rooms) {
-		mfield = ["lat", "lon", "seats"];
-		sfield = ["fullname", "shortname", "number", "name", "address", "type", "furniture", "href"];
-	}
-}
-
-function transformationsValidator(query: any): string {
+function transformationsValidator(transformations: TRANSFORMATIONS): void {
 	const validKeys = ["GROUP", "APPLY"];
-	const transformations = query.TRANSFORMATIONS;
 	const transformationKeys = Object.keys(transformations);
 	if (transformationKeys.length !== validKeys.length || !validKeys.every((key) => transformationKeys.includes(key))) {
 		throw new InsightError("TRANSFORMATIONS must contain only GROUP and APPLY");
@@ -215,47 +247,65 @@ function transformationsValidator(query: any): string {
 
 	groupValidator(transformations.GROUP);
 	applyValidator(transformations.APPLY);
-
-	return applyKey;
 }
 
-function groupValidator(group: any): void {
+// TODO might be able to set the dataset here
+function groupValidator(group: string[]): void {
 	if (!Array.isArray(group) || group.length === 0) {
 		throw new InsightError("GROUP must be a non-empty array.");
 	}
 
 	group.forEach((key: string) => {
-		const keyValidator = new RegExp(/^(?=\S)(?=[^_]*_)[^_]*_[^_]*$/);
-		if (!keyValidator.test(key)) {
-			throw new InsightError(`Invalid key in GROUP: ${key}`);
+		// push the group field onto list if it's not already on
+		if (!groupList.includes(key)) {
+			checkKey(key, "either");
+			groupList.push(key);
 		}
 	});
 }
 
 function applyValidator(apply: any): void {
 	apply.forEach((applyRule: any) => {
-		if (typeof applyRule !== "object") {
-			throw new InsightError("APPLYRULE must be an object");
-		}
-		applyKey = Object.keys(applyRule)[0];
-		const keyValidator = new RegExp(/^[^_]+$/); // cannot be empty or contain underscore
-		if (!keyValidator.test(applyKey)) {
-			throw new InsightError(`Invalid key in GROUP: ${applyKey}`);
-		}
-
-		const applyBody = Object.keys(applyRule[applyKey]);
-		if (typeof applyBody !== "object") {
-			throw new InsightError("apply body must be an object");
-		}
-
-		const applyToken = applyBody[0];
-		const validTokens = ["MAX", "MIN", "AVG", "COUNT", "SUM"];
-		if (!validTokens.includes(applyToken)) {
-			throw new InsightError(`Invalid APPLYTOKEN '${applyToken}'`);
-		}
-
-		// TODO check apply body - depends on whether it is room or section
-		// TODO check if it is only referencing 1 dataset
-		// TODO GROUPING & APPLY
+		applyRuleValidator(applyRule);
 	});
+}
+
+// TODO check apply body - depends on whether it is room or section
+function applyRuleValidator(applyRule: any): void {
+	if (typeof applyRule !== "object") {
+		throw new InsightError("APPLYRULE must be an object");
+	}
+
+	// Making sure APPLYRULE only have 1 rule in it
+	if (Object.keys(applyRule).length !== 1) {
+		throw new InsightError("Each APPLYRULE must have exactly 1 key");
+	}
+
+	const applyKey = Object.keys(applyRule)[0];
+	const keyValidator = new RegExp(/^[^_]+$/); // cannot be empty or contain underscore
+	if (!keyValidator.test(applyKey)) {
+		throw new InsightError(`Invalid key in APPLY: ${applyKey}`);
+	}
+	if (applyKeyList.includes(applyKey)) {
+		throw new InsightError(`Repeated applyKey ${applyKey}`);
+	}
+
+	const applyBody = applyRule[applyKey];
+	if (typeof applyBody !== "object" || Object.keys(applyBody).length !== 1) {
+		throw new InsightError("apply body must be an object with 1 key value pair");
+	}
+
+	const applyToken = Object.keys(applyBody)[0];
+	const validTokens = ["MAX", "MIN", "AVG", "COUNT", "SUM"];
+	if (!validTokens.includes(applyToken)) {
+		throw new InsightError(`Invalid APPLYTOKEN '${applyToken}'`);
+	}
+	// making sure the key can only be numerical for non COUNT tokens
+	if (applyToken !== "COUNT") {
+		checkKey(applyBody[applyToken], "numerical");
+	} else {
+		checkKey(applyBody[applyToken], "either");
+	}
+
+	applyKeyList.push(applyKey);
 }
