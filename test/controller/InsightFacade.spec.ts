@@ -566,6 +566,16 @@ describe("InsightFacade Tests for C2 Features", function () {
 			"[valid/multipleGroupings.json] SELECT rooms_shortname, rooms_furniture, MAX(rooms_seats) WHERE rooms_shortname IS 'BUCH' GROUP BY rooms_shortname, rooms_furniture",
 			checkQuery
 		);
+		it(
+			"[valid/rqDuplicateBuilding.json] Should create duplicate entries if index table has multiple copies of a building",
+			checkQuery
+		);
+		it("[valid/rqTwoAggregations.json] Should support >1 aggregations", checkQuery);
+		it("[valid/allAggregations.json] Should return a result for a query containing all agreggations", checkQuery);
+		it(
+			"[valid/duplicateAggregation.json] Should be able to run the same aggregation multiple times as long as column name is different",
+			checkQuery
+		);
 
 		it("[invalid/rqInvalidWhereKey.json] Room query using a Section key in WHERE clause", checkQuery);
 		it("[invalid/rqInvalidOptionsKeys.json] Room query using Section keys in OPTIONS", checkQuery);
@@ -584,13 +594,19 @@ describe("InsightFacade Tests for C2 Features", function () {
 			checkQuery
 		);
 		it("[invalid/emptyApplyKey.json] Apply key cannot be empty string", checkQuery);
-		it("[invalid/multipleApplyKeys.json] Apply rule should only have 1 key", checkQuery);
-
-		// TODO:
-		// MAX/MIN/AVG/SUM should only be requested for numeric keys
-		// nested apply's
-
-		///// experimental
-		it("[valid/rqDuplicateBuilding.json] ", checkQuery);
+		it("[invalid/multipleApplyKeys.json] A single apply rule should only have 1 key", checkQuery);
+		it("[invalid/nonNumericKeyAvg.json] Invalid key type -- Cannot use non-numeric key on avg", checkQuery);
+		it("[invalid/nonNumericKeySum.json] Invalid key type -- Cannot use non-numeric key on sum", checkQuery);
+		it("[invalid/nonNumericKeyMin.json] Invalid key type -- Cannot use non-numeric key on min", checkQuery);
+		it("[invalid/nonNumericKeyMax.json] Invalid key type -- Cannot use non-numeric key on max", checkQuery);
+		it(
+			"[invalid/emptyStringDataset.json] Referenced dataset cannot be empty string (dataset empty in COLUMNS and TRANSFORMATIONS)",
+			checkQuery
+		);
+		it(
+			"[invalid/multipleDatasetsReferenced.json] Multiple datasets referenced in COLUMNS and TRANSFORMATIONS -- Cannot query >1 dataset",
+			checkQuery
+		);
+		it("[invalid/duplicateAggregationKey.json] Multiple aggregations cannot have the same name", checkQuery);
 	});
 });

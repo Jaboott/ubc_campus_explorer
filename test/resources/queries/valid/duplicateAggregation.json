@@ -1,0 +1,85 @@
+{
+    "title": "Same aggregation twice",
+    "input": {
+        "WHERE": {
+            "IS": {
+                "rooms_shortname": "BUCH"
+            }
+        },
+        "OPTIONS": {
+            "COLUMNS": [
+                "rooms_shortname",
+                "rooms_shortname",
+                "rooms_furniture",
+                "rooms_furniture",
+                "max1",
+                "max2"
+            ]
+        },
+        "TRANSFORMATIONS": {
+            "GROUP": [
+                "rooms_shortname",
+                "rooms_shortname",
+                "rooms_furniture",
+                "rooms_furniture"
+            ],
+            "APPLY": [
+                {
+                    "max1": {
+                        "MAX": "rooms_seats"
+                    }
+                },
+                {
+                    "max2": {
+                        "MAX": "rooms_seats"
+                    }
+                }
+            ]
+        }
+    },
+    "errorExpected": false,
+    "expected": [
+        {
+            "rooms_shortname": "BUCH",
+            "rooms_furniture": "Classroom-Fixed Tablets",
+            "max1": 275,
+            "max2": 275
+        },
+        {
+            "rooms_shortname": "BUCH",
+            "rooms_furniture": "Classroom-Fixed Tables/Fixed Chairs",
+            "max1": 108,
+            "max2": 108
+        },
+        {
+            "rooms_shortname": "BUCH",
+            "rooms_furniture": "Classroom-Movable Tables & Chairs",
+            "max1": 42,
+            "max2": 42
+        },
+        {
+            "rooms_shortname": "BUCH",
+            "rooms_furniture": "Classroom-Fixed Tables/Moveable Chairs",
+            "max1": 78,
+            "max2": 78
+        },
+        {
+            "rooms_shortname": "BUCH",
+            "rooms_furniture": "Classroom-Movable Tablets",
+            "max1": 50,
+            "max2": 50
+        },
+        {
+            "rooms_shortname": "BUCH",
+            "rooms_furniture": "Classroom-Fixed Tables/Movable Chairs",
+            "max1": 78,
+            "max2": 78
+        },
+        {
+            "rooms_shortname": "BUCH",
+            "rooms_furniture": "Classroom-Moveable Tables & Chairs",
+            "max1": 24,
+            "max2": 24
+        }
+    ]
+}
