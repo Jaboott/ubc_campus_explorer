@@ -9,7 +9,7 @@ let numericalField: string[] = [];
 let applyKeyList: string[] = [];
 let groupList: string[] = [];
 
-export function queryValidator(query: Content, existingDataset: Map<string, InsightDatasetKind>): string[] {
+export function queryValidator(query: Content, existingDataset: Map<string, InsightDatasetKind>): [string, string[]] {
 	const validKeys = ["WHERE", "OPTIONS"];
 	const queryKeys = Object.keys(query);
 	resetFields();
@@ -33,7 +33,7 @@ export function queryValidator(query: Content, existingDataset: Map<string, Insi
 		}
 		getDataset(query, existingDataset);
 		transformationsValidator(query.TRANSFORMATIONS!);
-		optionsValidator(query.OPTIONS, "applyKeyList"); // TODO change this later
+		optionsValidator(query.OPTIONS, applyKeyList);
 	} else {
 		// moved getDataset here because datasetKind is needed to determine the valid mfield and sfield
 		// it could be written in a better way tho
@@ -44,9 +44,8 @@ export function queryValidator(query: Content, existingDataset: Map<string, Insi
 			filterValidator(query.WHERE);
 		}
 	}
-
 	// TODO need to intersect applyKey with columns
-	return [datasetName, "applyKeyList"]; // TODO change this later
+	return [datasetName, applyKeyList];
 }
 
 // the global fields persists between different tests...
@@ -185,8 +184,7 @@ function checkFilter(bodyObject: Object, type: string, filterType: string): void
 	}
 }
 
-// TODO need to make sure all COLUMN keys must correspond to one of the GROUP keys or to applykeys defined in the APPLY block
-function optionsValidator(options: OPTIONS, groupKey = ""): void {
+function optionsValidator(options: OPTIONS, groupKey: string[] = []): void {
 	const optionKeys = ["COLUMNS", "ORDER"];
 
 	// Check if query has COLUMNS and does not include any invalid key
@@ -195,7 +193,7 @@ function optionsValidator(options: OPTIONS, groupKey = ""): void {
 	}
 	// check that each field specified in the desired columns is valid
 	for (const column of options.COLUMNS) {
-		if (groupKey && column === groupKey) {
+		if (groupKey?.includes(column)) {
 			continue;
 		}
 		const [id, field] = column.split("_");

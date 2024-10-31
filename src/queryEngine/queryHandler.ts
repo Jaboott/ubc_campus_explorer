@@ -6,10 +6,10 @@ import { Content } from "./queryObjectInterface";
 const MAX_RESULT = 5000;
 const DECIMAL_PLACE = 2;
 let datasetName = "";
-let applyKey = "";
+let applyKey: string[] = [];
 
 // get all rows from a dataset and filter using comparator if necessary
-export async function handleWhere(content: any, dsName: string, aKey: string): Promise<InsightResult[]> {
+export async function handleWhere(content: any, dsName: string, aKey: string[]): Promise<InsightResult[]> {
 	datasetName = dsName;
 	applyKey = aKey;
 	const rawData = await fs.promises.readFile(`data/${datasetName}.json`, "utf-8");
@@ -43,8 +43,8 @@ function convertGroupingsToInsightResult(data: any): InsightResult[] {
 }
 
 // check if the query is only referencing 1 dataset
-function datasetValidator(dataToCheck: string, groupKey = ""): void {
-	if (groupKey && dataToCheck === groupKey) {
+function datasetValidator(dataToCheck: string, groupKey: string[] = []): void {
+	if (groupKey?.includes(dataToCheck)) {
 		return;
 	}
 	dataToCheck = dataToCheck.split("_")[0]; // chatgpt generated to extract the string before underscore

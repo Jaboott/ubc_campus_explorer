@@ -371,6 +371,8 @@ describe("InsightFacade", function () {
 			"[valid/sortMultipleKey.json] SELECT * WHERE avg > 99 ORDER BY sections_avg DESC, sections_year DESC",
 			checkQuery
 		);
+		// moved the test here because this uses section dataset and we did not add the dataset in the function below
+		it.only("[valid/allAggregations.json] Should return a result for a query containing all agreggations", checkQuery);
 		it("[invalid/resultTooLarge.json] Result too large error", checkQuery);
 		it("[invalid/invalid.json] Query missing WHERE", checkQuery);
 		it("[invalid/options.json] Query missing OPTIONS", checkQuery);
@@ -571,7 +573,6 @@ describe("InsightFacade Tests for C2 Features", function () {
 			checkQuery
 		);
 		it("[valid/rqTwoAggregations.json] Should support >1 aggregations", checkQuery);
-		it("[valid/allAggregations.json] Should return a result for a query containing all agreggations", checkQuery);
 		it(
 			"[valid/duplicateAggregation.json] Should be able to run the same aggregation multiple times as long as column name is different",
 			checkQuery
