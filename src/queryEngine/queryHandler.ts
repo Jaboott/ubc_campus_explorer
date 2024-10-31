@@ -23,7 +23,9 @@ export async function handleWhere(content: any, dsName: string, aKey: string): P
 	}
 	if (content.TRANSFORMATIONS) {
 		resultSoFar = doGroupings(content.TRANSFORMATIONS.GROUP, resultSoFar);
-		resultSoFar = doCalculations(content.TRANSFORMATIONS.APPLY, resultSoFar);
+		if (content.TRANSFORMATIONS.APPLY.length !== 0) {
+			resultSoFar = doCalculations(content.TRANSFORMATIONS.APPLY, resultSoFar);
+		}
 	}
 	return resultSoFar;
 }
@@ -164,7 +166,6 @@ export function doGroupings(groupClause: string[], resultSoFar: InsightResult[])
 // shortened with chatGPT
 function doCalculations(applyClause: any, resultSoFar: any): InsightResult[] {
 	const collapsedResult: InsightResult[] = [];
-
 	for (const apply of applyClause) {
 		const aggregateColumnName = Object.keys(apply)[0];
 		const applyBody = apply[aggregateColumnName];
@@ -173,7 +174,6 @@ function doCalculations(applyClause: any, resultSoFar: any): InsightResult[] {
 		for (const obKey in resultSoFar) {
 			const values = resultSoFar[obKey].map((obj: any) => obj[key]);
 			const result = calculateAggregate(values, applyBody);
-
 			combineResultWithObject(obKey, result, aggregateColumnName);
 		}
 	}
