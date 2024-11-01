@@ -18,9 +18,6 @@ export async function handleWhere(content: any, dsName: string, aKey: string[]):
 	for (const param in content.WHERE) {
 		resultSoFar = queryMapper(param, content.WHERE, resultSoFar);
 	}
-	if (resultSoFar.length > MAX_RESULT) {
-		throw new ResultTooLargeError();
-	}
 	if (content.TRANSFORMATIONS) {
 		resultSoFar = doGroupings(content.TRANSFORMATIONS.GROUP, resultSoFar);
 		// console.log("TRANSFORMATIONS: ", content.TRANSFORMATIONS.APPLY);
@@ -29,6 +26,9 @@ export async function handleWhere(content: any, dsName: string, aKey: string[]):
 		} else {
 			resultSoFar = doCalculations(content.TRANSFORMATIONS.APPLY, resultSoFar);
 		}
+	}
+	if (resultSoFar.length > MAX_RESULT) {
+		throw new ResultTooLargeError();
 	}
 	return resultSoFar;
 }
