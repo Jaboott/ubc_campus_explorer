@@ -1,5 +1,6 @@
 import { APIProvider, Map, AdvancedMarker, Pin } from "@vis.gl/react-google-maps";
 
+// attribution: https://developers.google.com/codelabs/maps-platform/maps-platform-101-react-js#0
 const locations = [
 	{ key: "biology", location: { lat: 49.26481032188259, lng: -123.25129034700498 }}, // 49.26481032188259, -123.25129034700498
     { key: "buchanan", location: { lat: 49.268717947910126, lng: -123.25462962768056}}, // 49.268717947910126, -123.25462962768056
