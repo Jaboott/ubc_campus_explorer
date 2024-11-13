@@ -105,7 +105,7 @@ export default class Server {
 			const { id, kind } = req.params;
 			const zipData = req.body;
 			const datasetKind = kind === "sections" ? InsightDatasetKind.Sections : InsightDatasetKind.Rooms;
-			const result = this.insightFacade.addDataset(id, zipData, datasetKind);
+			const result = await this.insightFacade.addDataset(id, zipData, datasetKind);
 			res.status(StatusCodes.OK).json({ result });
 		} catch (err) {
 			res.status(StatusCodes.BAD_REQUEST).json({ error: err });
@@ -115,7 +115,7 @@ export default class Server {
 	private async handleDelete(req: Request, res: Response): Promise<void> {
 		try {
 			const { id } = req.params;
-			const result = this.insightFacade.removeDataset(id);
+			const result = await this.insightFacade.removeDataset(id);
 			res.status(StatusCodes.OK).json({ result });
 		} catch (err) {
 			if (err instanceof Error) {
