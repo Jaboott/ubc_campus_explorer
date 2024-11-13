@@ -3,11 +3,14 @@ import { StatusCodes } from "http-status-codes";
 import Log from "@ubccpsc310/folder-test/build/Log";
 import * as http from "http";
 import cors from "cors";
+import InsightFacade from "../controller/InsightFacade";
+import { InsightDatasetKind } from "../controller/IInsightFacade";
 
 export default class Server {
 	private readonly port: number;
 	private express: Application;
 	private server: http.Server | undefined;
+	private insightFacade: InsightFacade;
 
 	constructor(port: number) {
 		Log.info(`Server::<init>( ${port} )`);
@@ -16,6 +19,8 @@ export default class Server {
 
 		this.registerMiddleware();
 		this.registerRoutes();
+
+		this.insightFacade = new InsightFacade();
 
 		// NOTE: you can serve static frontend files in from your express server
 		// by uncommenting the line below. This makes files in ./frontend/public
@@ -89,6 +94,53 @@ export default class Server {
 		this.express.get("/echo/:msg", Server.echo);
 
 		// TODO: your other endpoints should go here
+		this.express.put("/dataset/:id/:kind", this.handlePut.bind(this));
+		this.express.delete("/dataset/:id", this.handleDelete.bind(this));
+		this.express.post("/query", this.handlePost.bind(this));
+		this.express.get("/datasets", this.handleGet.bind(this));
+	}
+
+	private async handlePut(req: Request, res: Response): Promise<void> {
+		try {
+			const { id, kind } = req.params;
+			const zipData = req.body;
+			const datasetKind = kind === "sections" ? InsightDatasetKind.Sections : InsightDatasetKind.Rooms;
+			const result = this.insightFacade.addDataset(id, zipData, datasetKind);
+			res.status(StatusCodes.OK).json({ result });
+		} catch (err) {
+			res.status(StatusCodes.BAD_REQUEST).json({ error: err });
+		}
+	}
+
+	private async handleDelete(req: Request, res: Response): Promise<void> {
+		try {
+			const { id } = req.params;
+			const result = this.insightFacade.removeDataset(id);
+			res.status(StatusCodes.OK).json({ result });
+		} catch (err) {
+			if (err instanceof Error) {
+				if (err.name === "InsightError") {
+					res.status(StatusCodes.BAD_REQUEST).json({ error: err });
+				} else {
+					res.status(StatusCodes.NOT_FOUND).json({ error: err });
+				}
+			}
+		}
+	}
+
+	private async handlePost(req: Request, res: Response): Promise<void> {
+		try {
+			const { query } = req.body;
+			const result = await this.insightFacade.performQuery(query);
+			res.status(StatusCodes.OK).json({ result });
+		} catch (err) {
+			res.status(StatusCodes.BAD_REQUEST).json({ error: err });
+		}
+	}
+
+	private async handleGet(res: Response): Promise<void> {
+		const result = await this.insightFacade.listDatasets();
+		res.status(StatusCodes.OK).json({ result });
 	}
 
 	// The next two methods handle the echo service.
