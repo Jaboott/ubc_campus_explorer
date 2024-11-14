@@ -1,3 +1,5 @@
+import MapWithMarkers from "../components/MapWithMarkers";
+
 function Home() {
 	return <MapWithMarkers />;
 }

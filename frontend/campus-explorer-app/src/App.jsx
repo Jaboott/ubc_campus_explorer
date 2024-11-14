@@ -1,22 +1,21 @@
 import "./App.css";
 import React from "react";
-// import { APIProvider, Map, AdvancedMarker, MapCameraChangedEvent, Pin } from "@vis.gl/react-google-maps";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
-import MapWithMarkers from "./components/MapWithMarkers";
-// import { Router } from "express";
-// import Home from "./pages/Home";
+import Home from "./pages/Home";
+import Rooms from "./pages/Rooms";
 
 function App() {
 	return (
 		<>
 			<Navbar />
-			<MapWithMarkers />
-			{/* <Router>
+			<Router>
 				<Routes>
 					<Route exact path="/" element={<Home />} />
+					<Route path="/rooms" element={<Rooms />} />
 				</Routes>
-			</Router> */}
+			</Router>
 		</>
 	);
 }

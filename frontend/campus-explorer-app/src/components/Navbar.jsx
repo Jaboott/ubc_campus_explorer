@@ -22,7 +22,7 @@ function Navbar() {
 				<div className="collapse navbar-collapse justify-content-end" id="navbarNav">
 					<ul className="navbar-nav">
                     <li class="nav-item">
-							<a class="nav-link active" aria-current="page" href="#">
+							<a class="nav-link active" aria-current="page" href="/">
 								Home
 							</a>
 						</li>
@@ -32,7 +32,7 @@ function Navbar() {
 							</a>
 						</li>
 						<li class="nav-item">
-							<a class="nav-link" href="#">
+							<a class="nav-link" href="/rooms">
 								Rooms
 							</a>
 						</li>
