@@ -21,6 +21,14 @@ export default class Server {
 		// by uncommenting the line below. This makes files in ./frontend/public
 		// accessible at http://localhost:<port>/
 		// this.express.use(express.static("./frontend/public"))
+
+		// Serve the Vite-built static files from the 'dist' directory
+		this.express.use(express.static("./frontend/campus-explorer-app/dist"));
+
+		// Catch-all route to handle client-side routing (chat GPT)
+		this.express.get('*', (req, res) => {
+			res.sendFile('index.html', { root: './frontend/campus-explorer-app/dist' });
+		});
 	}
 
 	/**
