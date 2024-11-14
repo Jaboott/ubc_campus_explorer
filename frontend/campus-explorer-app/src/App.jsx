@@ -11,7 +11,7 @@ function App() {
 	return (
 		<>
 			<Navbar />
-			{/* <MapWithMarkers /> */}
+			<MapWithMarkers />
 			{/* <Router>
 				<Routes>
 					<Route exact path="/" element={<Home />} />
