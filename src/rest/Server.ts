@@ -4,7 +4,7 @@ import Log from "@ubccpsc310/folder-test/build/Log";
 import * as http from "http";
 import cors from "cors";
 import InsightFacade from "../controller/InsightFacade";
-import { InsightDatasetKind } from "../controller/IInsightFacade";
+import { InsightDatasetKind, InsightError } from "../controller/IInsightFacade";
 
 export default class Server {
 	private readonly port: number;
@@ -118,12 +118,10 @@ export default class Server {
 			const result = await this.insightFacade.removeDataset(id);
 			res.status(StatusCodes.OK).json({ result });
 		} catch (err) {
-			if (err instanceof Error) {
-				if (err.name === "InsightError") {
-					res.status(StatusCodes.BAD_REQUEST).json({ error: err });
-				} else {
-					res.status(StatusCodes.NOT_FOUND).json({ error: err });
-				}
+			if (err instanceof InsightError) {
+				res.status(StatusCodes.BAD_REQUEST).json({ error: err });
+			} else {
+				res.status(StatusCodes.NOT_FOUND).json({ error: err });
 			}
 		}
 	}
