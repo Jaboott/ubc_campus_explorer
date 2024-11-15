@@ -150,15 +150,15 @@ describe("Facade C3", function () {
 	});
 
 	//Timeout issues
-	// it("GET test for fetching datasets", async function () {
-	// 	const ENDPOINT_URL_GET = "/datasets";
-	// 	try {
-	// 		const res = await request(SERVER_URL).get(ENDPOINT_URL_GET);
-	// 		Log.info("GET request response", res.body);
-	// 		expect(res.status).to.be.equal(StatusCodes.OK);
-	// 	} catch (err) {
-	// 		Log.error("Error during GET request", err);
-	// 		expect.fail("GET request failed");
-	// 	}
-	// });
+	it("GET test for fetching datasets", async function () {
+		const ENDPOINT_URL_GET = "/datasets";
+		try {
+			const res = await request(SERVER_URL).get(ENDPOINT_URL_GET);
+			Log.info("GET request response", res.body);
+			expect(res.status).to.be.equal(StatusCodes.OK);
+		} catch (err) {
+			Log.error("Error during GET request", err);
+			expect.fail("GET request failed");
+		}
+	});
 });

@@ -138,7 +138,7 @@ export default class Server {
 		}
 	}
 
-	private async handleGet(res: Response): Promise<void> {
+	private async handleGet(req: Request, res: Response): Promise<void> {
 		const result = await this.insightFacade.listDatasets();
 		res.status(StatusCodes.OK).json({ result });
 	}
