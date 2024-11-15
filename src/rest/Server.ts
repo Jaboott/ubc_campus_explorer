@@ -31,8 +31,8 @@ export default class Server {
 		this.express.use(express.static("./frontend/campus-explorer-app/dist"));
 
 		// Catch-all route to handle client-side routing (chat GPT)
-		this.express.get('*', (req, res) => {
-			res.sendFile('index.html', { root: './frontend/campus-explorer-app/dist' });
+		this.express.get("*", (_req, res) => {
+			res.sendFile("index.html", { root: "./frontend/campus-explorer-app/dist" });
 		});
 	}
 
