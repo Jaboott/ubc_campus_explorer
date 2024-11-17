@@ -1,38 +1,14 @@
 import React, { useState, useEffect } from "react";
+import SortButton from "./SortButton";
+import getRoomQuery from "../query/getRoomQuery";
 
 const AllRooms = ({ selectedRooms, setSelectedRooms }) => {
 	const [rooms, setRooms] = useState([]);
+	const [order, setOrder] = useState("");
 
+	// rearrange the room list when the order changes
 	useEffect(() => {
-		const allRoomsQuery = {
-			query: {
-				WHERE: {},
-				OPTIONS: {
-					COLUMNS: [
-						"rooms_shortname",
-						"rooms_fullname",
-						"rooms_lat",
-						"rooms_lon",
-						"rooms_number",
-						"rooms_address",
-						"rooms_seats",
-					],
-					ORDER: "rooms_shortname",
-				},
-				TRANSFORMATIONS: {
-					GROUP: [
-						"rooms_shortname",
-						"rooms_fullname",
-						"rooms_lat",
-						"rooms_lon",
-						"rooms_number",
-						"rooms_address",
-						"rooms_seats",
-					],
-					APPLY: [],
-				},
-			},
-		};
+		const allRoomsQuery = getRoomQuery(order);
 
 		fetch("http://localhost:4321/query", {
 			method: "POST",
@@ -61,24 +37,22 @@ const AllRooms = ({ selectedRooms, setSelectedRooms }) => {
 			.catch((err) => {
 				console.log("error:", err.message);
 			});
-	}, []);
+	}, [order]);
 
 	const handleCheckboxChange = (room) => {
 		setSelectedRooms((prevSelected) => {
 			const updatedSelected = { ...prevSelected };
-
-			if (updatedSelected[room.identifier]) {
-				delete updatedSelected[room.identifier];
-			} else {
-				updatedSelected[room.identifier] = room;
-			}
+			updatedSelected[room.identifier] ? delete updatedSelected[room.identifier] : updatedSelected[room.identifier] = room;
 			return updatedSelected;
 		});
 	};
 
 	return (
 		<div>
-			<h2 className="text-center">All Rooms</h2>
+            <div className="d-flex justify-content-between" style={{ padding: "20px" }}>
+                <h2 className="text-center">All Rooms</h2>
+                <SortButton order={order} setOrder={setOrder}/>
+            </div>
 			<div
 				className="p-3 d-flex flex-wrap justify-content-center"
 				style={{
