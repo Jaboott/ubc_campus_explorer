@@ -26,7 +26,7 @@ function MapWithMarkers() {
 		
 		// I'm using my IP address here because for some reason localhost wouldn't work for me...
 		// Otherwise we could just use /query in fetch
-		const apiUrl = "http://128.189.231.98:4321/query";
+		const apiUrl = "http://localhost:4321/query";
 
 		fetch(apiUrl, {
         // fetch("/query", {
