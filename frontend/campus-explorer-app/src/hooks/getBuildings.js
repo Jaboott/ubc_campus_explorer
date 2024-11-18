@@ -18,6 +18,7 @@ const getBuildings = async (query) => {
         return data.result.map((item) => ({
           shortname: item.rooms_shortname,
           fullname: item.rooms_fullname,
+          address: item.rooms_address,
           location: { lat: item.rooms_lat, lng: item.rooms_lon },
         }));
       }

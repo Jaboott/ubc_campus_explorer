@@ -9,7 +9,7 @@ function SortButton({ order, setOrder }) {
   };
 
   return (
-    <FormControl sx={{ width: 180 }}>
+    <FormControl sx={{ width: 150 }}>
       <InputLabel id="Sort">Order</InputLabel>
       <Select
         labelId="Sort"

@@ -7,7 +7,8 @@ export const getAllBuildingsQuery = () => {
             "rooms_shortname",
             "rooms_fullname",
             "rooms_lat",
-            "rooms_lon"
+            "rooms_lon",
+            "rooms_address"
           ]
         },
         TRANSFORMATIONS: {
@@ -15,7 +16,8 @@ export const getAllBuildingsQuery = () => {
             "rooms_shortname",
             "rooms_fullname",
             "rooms_lat",
-            "rooms_lon"
+            "rooms_lon",
+            "rooms_address"
           ],
           APPLY: []
         }

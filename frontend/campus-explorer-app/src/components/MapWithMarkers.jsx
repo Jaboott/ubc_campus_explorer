@@ -1,5 +1,5 @@
-import React from "react";
-import { APIProvider, Map, AdvancedMarker, Pin } from "@vis.gl/react-google-maps";
+import React, { useState } from "react";
+import { APIProvider, Map, AdvancedMarker, Pin, InfoWindow } from "@vis.gl/react-google-maps";
 
 // https://visgl.github.io/react-google-maps/docs/get-started
 function MapWithMarkers({ locations }) {
@@ -24,14 +24,33 @@ function MapWithMarkers({ locations }) {
 }
 
 // https://developers.google.com/codelabs/maps-platform/maps-platform-101-react-js#0
-const PoiMarkers = ({ pois }) => (
-	<>
-		{pois.map((poi, index) => (
-			<AdvancedMarker key={index} position={poi.location}>
-				<Pin background={"#FBBC04"} glyphColor={"#000"} borderColor={"#000"} />
-			</AdvancedMarker>
-		))}
-	</>
-);
+// click on a marker to show name and address
+const PoiMarkers = ({ pois }) => {
+	const [selectedPoi, setSelectedPoi] = useState(null);
+
+	const handleMarkerClick = (poi) => {
+		setSelectedPoi(poi);
+	};
+
+	return (
+		<>
+			{pois.map((poi, index) => (
+				<AdvancedMarker key={index} position={poi.location} onClick={() => handleMarkerClick(poi)}>
+					<Pin background={"#FBBC04"} glyphColor={"#000"} borderColor={"#000"} />
+				</AdvancedMarker>
+			))}
+
+			{selectedPoi && (
+				<InfoWindow
+					position={selectedPoi.location}
+					onCloseClick={() => setSelectedPoi(null)}
+					shouldFocus={true}
+					headerContent={selectedPoi.fullname}
+					content={selectedPoi.address}
+				/>
+			)}
+		</>
+	);
+};
 
 export default MapWithMarkers;

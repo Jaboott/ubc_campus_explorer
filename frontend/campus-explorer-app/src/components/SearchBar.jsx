@@ -6,6 +6,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import { getSearchQuery } from "../query/getSearchQuery";
 import getBuildings from "../hooks/getBuildings";
 
+// type in shortname > press enter key to search 
 function SearchBar({ setResults }) {
   const fetchData = async (value) => {
     try {
