@@ -1,19 +1,20 @@
-function Rooms() {
-    return (
-        <>
-            <div className="d-flex justify-content-between">
-                <div className=" card rounded w-50 m-1">
-                    <h2>All Rooms</h2>
-                    <p>Room 1, Buchanan</p>
-                    <p>Room 2, Buchanan</p>
-                </div>
-                <div className="card rounded w-50 m-1">
-                    <h2>Rooms details</h2>
-                </div>
+import React, { useState } from "react";
+import AllRooms from "../components/AllRooms";
+import WalkingTime from "../components/WalkingTime";
 
-            </div>
-        </>
-    )
+function Rooms() {
+	const [selectedRooms, setSelectedRooms] = useState({});
+
+	return (
+		<div className="d-flex justify-content-between">
+			<div className="card rounded w-50 m-1">
+				<AllRooms selectedRooms={selectedRooms} setSelectedRooms={setSelectedRooms} />
+			</div>
+			<div className="card rounded w-50 m-1">
+				<WalkingTime selectedRooms={selectedRooms} />
+			</div>
+		</div>
+	);
 }
 
-export default Rooms
+export default Rooms;
