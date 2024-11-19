@@ -64,6 +64,7 @@ const AllRooms = ({ selectedRooms, setSelectedRooms }) => {
 					<div key={room.identifier} className="d-flex align-items-center gap-2">
 						<input
 							type="checkbox"
+							className="form-check-input text-primary"
 							id={`checkbox-${room.identifier}`}
 							checked={!!selectedRooms[room.identifier]}
 							onChange={() => handleCheckboxChange(room)}

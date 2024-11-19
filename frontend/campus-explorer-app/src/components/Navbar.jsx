@@ -4,7 +4,7 @@ function Navbar() {
 	return (
 		<nav className="navbar navbar-expand-lg">
 			<div className="container-fluid">
-				<a className="navbar-brand" href="#">
+				<a className="navbar-brand" href="/">
 					<img src={navbarLogo} alt="Logo" width="24" height="24" className="d-inline-block align-text-top" />
 					UBC Campus Explorer
 				</a>{" "}
