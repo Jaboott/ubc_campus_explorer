@@ -4,7 +4,7 @@ import Log from "@ubccpsc310/folder-test/build/Log";
 import * as http from "http";
 import cors from "cors";
 import InsightFacade from "../controller/InsightFacade";
-import { InsightDatasetKind } from "../controller/IInsightFacade";
+import { InsightDatasetKind, InsightError } from "../controller/IInsightFacade";
 
 export default class Server {
 	private readonly port: number;
@@ -106,7 +106,7 @@ export default class Server {
 			const zipData = req.body;
 			const datasetKind = kind === "sections" ? InsightDatasetKind.Sections : InsightDatasetKind.Rooms;
 			const result = await this.insightFacade.addDataset(id, zipData, datasetKind);
-			res.status(StatusCodes.OK).json({ result });
+			res.status(StatusCodes.OK).json({ result: result });
 		} catch (err) {
 			res.status(StatusCodes.BAD_REQUEST).json({ error: err });
 		}
@@ -116,14 +116,12 @@ export default class Server {
 		try {
 			const { id } = req.params;
 			const result = await this.insightFacade.removeDataset(id);
-			res.status(StatusCodes.OK).json({ result });
+			res.status(StatusCodes.OK).json({ result: result });
 		} catch (err) {
-			if (err instanceof Error) {
-				if (err.name === "InsightError") {
-					res.status(StatusCodes.BAD_REQUEST).json({ error: err });
-				} else {
-					res.status(StatusCodes.NOT_FOUND).json({ error: err });
-				}
+			if (err instanceof InsightError) {
+				res.status(StatusCodes.BAD_REQUEST).json({ error: err });
+			} else {
+				res.status(StatusCodes.NOT_FOUND).json({ error: err });
 			}
 		}
 	}
@@ -132,7 +130,7 @@ export default class Server {
 		try {
 			const { query } = req.body;
 			const result = await this.insightFacade.performQuery(query);
-			res.status(StatusCodes.OK).json({ result });
+			res.status(StatusCodes.OK).json({ result: result });
 		} catch (err) {
 			res.status(StatusCodes.BAD_REQUEST).json({ error: err });
 		}
@@ -140,7 +138,7 @@ export default class Server {
 
 	private async handleGet(_req: Request, res: Response): Promise<void> {
 		const result = await this.insightFacade.listDatasets();
-		res.status(StatusCodes.OK).json({ result });
+		res.status(StatusCodes.OK).json({ result: result });
 	}
 
 	// The next two methods handle the echo service.
