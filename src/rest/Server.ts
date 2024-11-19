@@ -108,7 +108,8 @@ export default class Server {
 			const result = await this.insightFacade.addDataset(id, zipData, datasetKind);
 			res.status(StatusCodes.OK).json({ result: result });
 		} catch (err) {
-			res.status(StatusCodes.BAD_REQUEST).json({ error: err });
+			const message = this.getMessage(err);
+			res.status(StatusCodes.BAD_REQUEST).json({ error: message });
 		}
 	}
 
@@ -118,10 +119,11 @@ export default class Server {
 			const result = await this.insightFacade.removeDataset(id);
 			res.status(StatusCodes.OK).json({ result: result });
 		} catch (err) {
+			const message = this.getMessage(err);
 			if (err instanceof InsightError) {
-				res.status(StatusCodes.BAD_REQUEST).json({ error: err });
+				res.status(StatusCodes.BAD_REQUEST).json({ error: message });
 			} else {
-				res.status(StatusCodes.NOT_FOUND).json({ error: err });
+				res.status(StatusCodes.NOT_FOUND).json({ error: message });
 			}
 		}
 	}
@@ -132,7 +134,8 @@ export default class Server {
 			const result = await this.insightFacade.performQuery(query);
 			res.status(StatusCodes.OK).json({ result: result });
 		} catch (err) {
-			res.status(StatusCodes.BAD_REQUEST).json({ error: err });
+			const message = this.getMessage(err);
+			res.status(StatusCodes.BAD_REQUEST).json({ error: message });
 		}
 	}
 
@@ -160,5 +163,14 @@ export default class Server {
 		} else {
 			return "Message not provided";
 		}
+	}
+
+	private getMessage(error: any): string {
+		let message = "Unexpected Error";
+		if (error instanceof Error) {
+			message = error.message;
+		}
+
+		return message;
 	}
 }
