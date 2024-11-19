@@ -56,7 +56,7 @@ const AllRooms = ({ selectedRooms, setSelectedRooms }) => {
 			<div
 				className="p-3 d-flex flex-wrap justify-content-center"
 				style={{
-					maxHeight: "500px",
+					maxHeight: "70vh",
 					overflowY: "auto",
 				}}
 			>

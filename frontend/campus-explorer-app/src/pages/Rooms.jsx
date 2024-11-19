@@ -6,7 +6,7 @@ function Rooms() {
 	const [selectedRooms, setSelectedRooms] = useState({});
 
 	return (
-		<div className="d-flex justify-content-between">
+		<div className="d-flex justify-content-between mt-4">
 			<div className="card rounded w-50 m-1">
 				<AllRooms selectedRooms={selectedRooms} setSelectedRooms={setSelectedRooms} />
 			</div>
