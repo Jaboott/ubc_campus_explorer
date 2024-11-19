@@ -106,7 +106,7 @@ export default class Server {
 			const zipData = req.body;
 			const datasetKind = kind === "sections" ? InsightDatasetKind.Sections : InsightDatasetKind.Rooms;
 			const result = await this.insightFacade.addDataset(id, zipData, datasetKind);
-			res.status(StatusCodes.OK).json({ result });
+			res.status(StatusCodes.OK).json({ result: result });
 		} catch (err) {
 			res.status(StatusCodes.BAD_REQUEST).json({ error: err });
 		}
@@ -116,7 +116,7 @@ export default class Server {
 		try {
 			const { id } = req.params;
 			const result = await this.insightFacade.removeDataset(id);
-			res.status(StatusCodes.OK).json({ result });
+			res.status(StatusCodes.OK).json({ result: result });
 		} catch (err) {
 			if (err instanceof InsightError) {
 				res.status(StatusCodes.BAD_REQUEST).json({ error: err });
@@ -130,7 +130,7 @@ export default class Server {
 		try {
 			const { query } = req.body;
 			const result = await this.insightFacade.performQuery(query);
-			res.status(StatusCodes.OK).json({ result });
+			res.status(StatusCodes.OK).json({ result: result });
 		} catch (err) {
 			res.status(StatusCodes.BAD_REQUEST).json({ error: err });
 		}
@@ -138,7 +138,7 @@ export default class Server {
 
 	private async handleGet(_req: Request, res: Response): Promise<void> {
 		const result = await this.insightFacade.listDatasets();
-		res.status(StatusCodes.OK).json({ result });
+		res.status(StatusCodes.OK).json({ result: result });
 	}
 
 	// The next two methods handle the echo service.
