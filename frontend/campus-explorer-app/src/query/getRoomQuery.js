@@ -17,7 +17,8 @@ const getRoomQuery = (order) => {
             "rooms_number",
             "rooms_address",
             "rooms_seats",
-            "rooms_type"
+            "rooms_type",
+            "rooms_furniture",
           ],
           ORDER: orderOptions[order],
         },
@@ -30,7 +31,8 @@ const getRoomQuery = (order) => {
             "rooms_number",
             "rooms_address",
             "rooms_seats",
-            "rooms_type"
+            "rooms_type",
+            "rooms_furniture",
           ],
           APPLY: [],
         },
