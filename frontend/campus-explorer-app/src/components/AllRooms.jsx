@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import SortButton from "./SortButton";
 import getRoomQuery from "../query/getRoomQuery";
+import FilterButton from "./FilterButton";
 
 const AllRooms = ({ selectedRooms, setSelectedRooms }) => {
 	const [rooms, setRooms] = useState([]);
 	const [order, setOrder] = useState("");
+	const [filter, setFilter] = useState("");
 
 	// rearrange the room list when the order changes
 	useEffect(() => {
@@ -52,6 +54,7 @@ const AllRooms = ({ selectedRooms, setSelectedRooms }) => {
 		<div>
             <div className="d-flex justify-content-between" style={{ padding: "20px" }}>
                 <h2 className="text-center">All Rooms</h2>
+				<FilterButton filter={filter} setFilter={setFilter}/>
                 <SortButton order={order} setOrder={setOrder}/>
             </div>
 			<div

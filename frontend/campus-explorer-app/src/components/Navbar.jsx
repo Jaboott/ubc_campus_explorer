@@ -1,5 +1,6 @@
 import navbarLogo from "../assets/navbar_logo.png";
 
+// reference: https://getbootstrap.com/docs/4.0/components/navbar/
 function Navbar() {
 	return (
 		<nav className="navbar navbar-expand-lg">
