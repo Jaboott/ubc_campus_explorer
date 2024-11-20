@@ -30,6 +30,7 @@ const AllRooms = ({ selectedRooms, setSelectedRooms }) => {
 						address: item.rooms_address,
 						seats: item.rooms_seats,
 						location: { lat: item.rooms_lat, lng: item.rooms_lon },
+						type: item.rooms_type
 					}));
 					setRooms(roomData);
 				}
@@ -74,6 +75,9 @@ const AllRooms = ({ selectedRooms, setSelectedRooms }) => {
 							<p className="card-text">{room.fullname}</p>
 							<p className="card-text">
 								<strong>Address:</strong> {room.address}
+							</p>
+							<p className="card-text">
+								<strong>Room Type:</strong> {room.type}
 							</p>
 							<p className="card-text">
 								<strong>Seats:</strong> {room.seats}
