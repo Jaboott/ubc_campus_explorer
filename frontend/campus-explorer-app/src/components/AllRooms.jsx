@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import SortButton from "./SortButton";
 import getRoomQuery from "../query/getRoomQuery";
 import FilterButton from "./FilterButton";
+import { Chip } from "@mui/material";
 
 const AllRooms = ({ selectedRooms, setSelectedRooms }) => {
 	const [rooms, setRooms] = useState([]);
@@ -55,7 +56,7 @@ const AllRooms = ({ selectedRooms, setSelectedRooms }) => {
 		if (filter === "Max Seats") {
 			const maxSeats = prompt("Enter maximum number of seats: ");
 			if (maxSeats !== null) {
-				console.log("MAX: ", maxSeats)
+				console.log("MAX: ", maxSeats);
 			}
 		}
 	}, [filter]);
@@ -63,18 +64,20 @@ const AllRooms = ({ selectedRooms, setSelectedRooms }) => {
 	const handleCheckboxChange = (room) => {
 		setSelectedRooms((prevSelected) => {
 			const updatedSelected = { ...prevSelected };
-			updatedSelected[room.identifier] ? delete updatedSelected[room.identifier] : updatedSelected[room.identifier] = room;
+			updatedSelected[room.identifier]
+				? delete updatedSelected[room.identifier]
+				: (updatedSelected[room.identifier] = room);
 			return updatedSelected;
 		});
 	};
 
 	return (
 		<div>
-            <div className="d-flex justify-content-between" style={{ padding: "20px" }}>
-                <h2 className="text-center">All Rooms</h2>
-				<FilterButton filter={filter} setFilter={setFilter}/>
-                <SortButton order={order} setOrder={setOrder}/>
-            </div>
+			<div className="d-flex justify-content-between" style={{ padding: "20px" }}>
+				<h2 className="text-center">All Rooms</h2>
+				<FilterButton filter={filter} setFilter={setFilter} />
+				<SortButton order={order} setOrder={setOrder} />
+			</div>
 			<div
 				className="p-3 d-flex flex-wrap justify-content-center"
 				style={{
@@ -91,21 +94,30 @@ const AllRooms = ({ selectedRooms, setSelectedRooms }) => {
 							checked={!!selectedRooms[room.identifier]}
 							onChange={() => handleCheckboxChange(room)}
 						/>
-						<div className="card m-2 p-2" style={{ width: "400px" }}>
+						<div className="card m-2 p-2" style={{ width: "400px", display: "block" }}>
 							<h5 className="card-title">{`${room.identifier}`}</h5>
-							<p className="card-text">{room.fullname}</p>
-							<p className="card-text">
-								<strong>Address:</strong> {room.address}
-							</p>
-							<p className="card-text">
-								<strong>Room Type:</strong> {room.type}
-							</p>
-							<p className="card-text">
-								<strong>Furniture Type:</strong> {room.furniture}
-							</p>
+							<p className="card-text">{room.fullname} | 📍{room.address}</p>
 							<p className="card-text">
 								<strong>Seats:</strong> {room.seats}
 							</p>
+							<Chip
+								label={room.type}
+								color="primary"
+								variant="outlined"
+								sx={{
+									mx: "5px", 
+									mb: 1,
+								}}
+							/>
+							<Chip
+								label={room.furniture}
+								color="secondary"
+								variant="outlined"
+								sx={{
+									mx: "5px", 
+									mb: 1,
+								}}
+							/>
 						</div>
 					</div>
 				))}
