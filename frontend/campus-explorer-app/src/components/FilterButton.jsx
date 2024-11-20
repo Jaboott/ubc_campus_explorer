@@ -54,6 +54,8 @@ const FilterButton = ({ filter, setFilter }) => {
 						{option}
 					</MenuItem>
 				))}
+                <MenuItem value={"Min Seats"}>{"Min Seats"}</MenuItem>
+                <MenuItem value={"Max Seats"}>{"Max Seats"}</MenuItem>
 			</Select>
 		</FormControl>
 	);

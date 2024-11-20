@@ -42,10 +42,22 @@ const AllRooms = ({ selectedRooms, setSelectedRooms }) => {
 			});
 	}, [order]);
 
-	// useEffect(() => {
-	// 	const filteredRooms = rooms.filter(rooms => rooms.type === filter);
-	// 	setRooms(filteredRooms);
-	// }, [filter]);
+	useEffect(() => {
+		console.log("FILTER SELECTED: ", filter);
+		if (filter === "Min Seats") {
+			const minSeats = prompt("Enter minimum number of seats: ");
+			if (minSeats !== null) {
+				console.log("MIN: ", minSeats);
+			}
+		}
+
+		if (filter === "Max Seats") {
+			const maxSeats = prompt("Enter maximum number of seats: ");
+			if (maxSeats !== null) {
+				console.log("MAX: ", maxSeats)
+			}
+		}
+	}, [filter]);
 
 	const handleCheckboxChange = (room) => {
 		setSelectedRooms((prevSelected) => {
