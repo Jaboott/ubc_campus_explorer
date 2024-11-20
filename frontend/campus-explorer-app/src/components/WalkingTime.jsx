@@ -12,6 +12,14 @@ const WalkingTime = ({ selectedRooms }) => {
     libraries,
   });
 
+  const [walkTimeTotalInMinutes, setWalkTime] = useState(0);
+
+  useEffect(() => {
+    const totalWalkTime = routeResults.reduce((total, route) => total + Math.round(route.seconds/60), 0); // convert route duration to minutes then round to nearest minute (for rounding issue)
+    // console.log("Total walk time: ", totalWalkTime);
+    setWalkTime(totalWalkTime);
+  }, [routeResults]);
+
   useEffect(() => {
     if (isLoaded && Object.keys(selectedRooms).length > 1) {
       const roomEntries = Object.entries(selectedRooms); // Array of [roomName, roomData]
@@ -48,9 +56,7 @@ const WalkingTime = ({ selectedRooms }) => {
         );
       });
     }
-
     setRouteResults(results);
-    console.log('Route Results:', results);
   };
 
   const processResult = ({ response, status, originName, destinationName, results, resolve, reject }) => {
@@ -62,6 +68,7 @@ const WalkingTime = ({ selectedRooms }) => {
           to: destinationName,
           distance: result.distance.text,
           duration: result.duration.text,
+          seconds: result.duration.value,
         });
       }
       resolve();
@@ -75,13 +82,16 @@ const WalkingTime = ({ selectedRooms }) => {
     <div style={{ padding: "20px" }}>
       <h2>Walking Time</h2>
       {Object.keys(selectedRooms).length > 1 ? (
-        <ul style={{ listStyleType: 'none', padding: 0 }}> Routes:
-          {routeResults.map((result, index) => (
-            <li key={index}>
-              📍 <strong>{result.from}</strong> ➡ <strong>{result.to}</strong>: {result.distance} in {result.duration}
-            </li>
-          ))}
-        </ul>
+        <div>
+          <ul style={{ listStyleType: 'none', padding: 0 }}> Routes:
+            {routeResults.map((result, index) => (
+              <li key={index}>
+                📍 <strong>{result.from}</strong> ➡ <strong>{result.to}</strong>: {result.distance} in {result.duration}
+              </li>
+            ))}
+          </ul>
+          <div>Total Walk time: ~{(walkTimeTotalInMinutes)}min</div>
+        </div>
       ) : (
         <p>Choose 2 or more rooms to estimate walking time</p>
       )}
