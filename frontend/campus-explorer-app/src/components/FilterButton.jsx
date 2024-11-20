@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
+import { FormControl, InputLabel, Select, MenuItem, ListSubheader } from "@mui/material";
 import getFilterOptions from "../query/getFilterOptions";
 
 const FilterButton = ({ filter, setFilter }) => {
@@ -49,11 +49,13 @@ const FilterButton = ({ filter, setFilter }) => {
 		<FormControl sx={{ width: 150 }}>
 			<InputLabel id="Filter">Filters</InputLabel>
 			<Select value={filter} label="Filter" onChange={handleChange}>
-				{options.map((option) => (
+				<MenuItem value={""}>{"Choose Filter"}</MenuItem>
+                {options.map((option) => (
 					<MenuItem key={option} value={option}>
 						{option}
 					</MenuItem>
 				))}
+                <ListSubheader>Seating Capacity</ListSubheader>
                 <MenuItem value={"Min Seats"}>{"Min Seats"}</MenuItem>
                 <MenuItem value={"Max Seats"}>{"Max Seats"}</MenuItem>
 			</Select>
