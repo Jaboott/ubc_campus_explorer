@@ -1,24 +1,48 @@
-// import Select from 'react-select'
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
+import getFilterOptions from "../query/getFilterOptions";
 
-// reference: https://mui.com/material-ui/react-select/
 const FilterButton = ({ filter, setFilter }) => {
-	// Options for the Select component
-	const options = [
-		{ value: "", label: "Choose Room Type" },
-		{ value: "Studio Lab", label: "Studio Lab" },
-		{ value: "Active Learning", label: "Active Learning" },
-		{ value: "Case Style", label: "Case Style" },
-		{ value: "Small Group", label: "Small Group" },
-		{ value: "Open Design General Purpose", label: "Open Design General Purpose" },
-		{ value: "Tiered Large Group", label: "Tiered Large Group" },
-	];
+	// State for storing the options
+	const [options, setOptions] = useState([]);
 
-	// Handle the change when an option is selected
+	useEffect(() => {
+		const columnToGet = ["type", "furniture"];
+
+		// wait for all fetch requests
+		Promise.all(
+			columnToGet.map((type) => {
+				const allTypesQuery = getFilterOptions(type);
+				return fetch("http://localhost:4321/query", {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify(allTypesQuery),
+				})
+					.then((response) => response.json())
+					.then((data) => {
+						if (data.result) {
+							const distinctEntriesPerColumn = data.result.map((item) => Object.values(item)).flat();
+							return distinctEntriesPerColumn;
+						}
+						return [];
+					})
+					.catch((err) => {
+						console.log("error:", err.message);
+						return [];
+					});
+			})
+		).then((results) => {
+			const allOptions = results.flat();
+			setOptions(allOptions);
+			console.log("ALL TYPES: ", allOptions);
+		});
+	}, []);
+
 	const handleChange = (event) => {
 		const value = event.target.value;
-		setFilter(value); // Update the state with the selected value
+		setFilter(value);
 	};
 
 	return (
@@ -26,8 +50,8 @@ const FilterButton = ({ filter, setFilter }) => {
 			<InputLabel id="Filter">Filters</InputLabel>
 			<Select value={filter} label="Filter" onChange={handleChange}>
 				{options.map((option) => (
-					<MenuItem key={option.value} value={option.value}>
-						{option.label}
+					<MenuItem key={option} value={option}>
+						{option}
 					</MenuItem>
 				))}
 			</Select>

@@ -42,6 +42,11 @@ const AllRooms = ({ selectedRooms, setSelectedRooms }) => {
 			});
 	}, [order]);
 
+	// useEffect(() => {
+	// 	const filteredRooms = rooms.filter(rooms => rooms.type === filter);
+	// 	setRooms(filteredRooms);
+	// }, [filter]);
+
 	const handleCheckboxChange = (room) => {
 		setSelectedRooms((prevSelected) => {
 			const updatedSelected = { ...prevSelected };
