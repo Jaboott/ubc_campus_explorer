@@ -23,8 +23,7 @@ const FilterButton = ({ filter, setFilter }) => {
 					.then((response) => response.json())
 					.then((data) => {
 						if (data.result) {
-							const distinctEntriesPerColumn = data.result.map((item) => Object.values(item)).flat();
-							return distinctEntriesPerColumn;
+							return data.result;
 						}
 						return [];
 					})
@@ -52,7 +51,7 @@ const FilterButton = ({ filter, setFilter }) => {
 				<MenuItem value={""}>{"Choose Filter"}</MenuItem>
                 {options.map((option) => (
 					<MenuItem key={option} value={option}>
-						{option}
+						{Object.values(option)[0]}
 					</MenuItem>
 				))}
                 <ListSubheader>Seating Capacity</ListSubheader>

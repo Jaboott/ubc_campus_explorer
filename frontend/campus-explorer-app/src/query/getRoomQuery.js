@@ -1,13 +1,18 @@
-const getRoomQuery = (order) => {
+const getRoomQuery = (order, filter) => {
     const orderOptions = {
       "": "rooms_shortname",
       asc: { dir: "UP", keys: ["rooms_seats"] },
       dsc: { dir: "DOWN", keys: ["rooms_seats"] },
     };
-  
-    return {
+
+	const wrappedFilter = Object.keys(filter)[0] == "rooms_type" || Object.keys(filter)[0] == "rooms_furniture"?
+		{IS: {...filter}} : filter;
+
+	return {
       query: {
-        WHERE: {},
+        WHERE: {
+			...wrappedFilter,
+		},
         OPTIONS: {
           COLUMNS: [
             "rooms_shortname",

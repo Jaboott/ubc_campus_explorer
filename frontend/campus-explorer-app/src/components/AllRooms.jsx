@@ -11,8 +11,8 @@ const AllRooms = ({ selectedRooms, setSelectedRooms }) => {
 
 	// rearrange the room list when the order changes
 	useEffect(() => {
-		const allRoomsQuery = getRoomQuery(order);
-
+		const allRoomsQuery = getRoomQuery(order, filter);
+		console.log(JSON.stringify(allRoomsQuery));
 		fetch("http://localhost:4321/query", {
 			method: "POST",
 			headers: {
@@ -42,13 +42,14 @@ const AllRooms = ({ selectedRooms, setSelectedRooms }) => {
 			.catch((err) => {
 				console.log("error:", err.message);
 			});
-	}, [order]);
+	}, [order, filter]);
 
 	useEffect(() => {
 		console.log("FILTER SELECTED: ", filter);
 		if (filter === "Min Seats") {
 			const minSeats = prompt("Enter minimum number of seats: ");
 			if (minSeats !== null) {
+				setFilter({GT: {"rooms_seats": Number(minSeats)}})
 				console.log("MIN: ", minSeats);
 			}
 		}
@@ -56,6 +57,7 @@ const AllRooms = ({ selectedRooms, setSelectedRooms }) => {
 		if (filter === "Max Seats") {
 			const maxSeats = prompt("Enter maximum number of seats: ");
 			if (maxSeats !== null) {
+				setFilter({LT: {"rooms_seats": Number(maxSeats),},})
 				console.log("MAX: ", maxSeats);
 			}
 		}
@@ -105,7 +107,7 @@ const AllRooms = ({ selectedRooms, setSelectedRooms }) => {
 								color="primary"
 								variant="outlined"
 								sx={{
-									mx: "5px", 
+									mx: "5px",
 									mb: 1,
 								}}
 							/>
@@ -114,7 +116,7 @@ const AllRooms = ({ selectedRooms, setSelectedRooms }) => {
 								color="warning"
 								variant="outlined"
 								sx={{
-									mx: "5px", 
+									mx: "5px",
 									mb: 1,
 								}}
 							/>
