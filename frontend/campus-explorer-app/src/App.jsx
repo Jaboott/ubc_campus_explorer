@@ -9,8 +9,8 @@ import Rooms from "./pages/Rooms";
 function App() {
 	return (
 		<>
-			<Navbar />
 			<Router>
+			<Navbar />
 				<Routes>
 					<Route exact path="/" element={<Home />} />
 					<Route path="/rooms" element={<Rooms />} />

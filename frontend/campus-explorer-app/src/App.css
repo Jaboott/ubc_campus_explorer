@@ -5,6 +5,16 @@
   /* text-align: center; */
 }
 
+.activePage a {
+  background-color: #0C58B4;
+  border-radius: 8px;
+  color: white;
+}
+
+.activePage a:hover {
+  color: white; /* Keep the color the same on hover */
+}
+
 /* .logo {
   height: 6em;
   padding: 1.5em;
