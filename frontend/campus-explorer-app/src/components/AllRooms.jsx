@@ -111,7 +111,7 @@ const AllRooms = ({ selectedRooms, setSelectedRooms }) => {
 							/>
 							<Chip
 								label={room.furniture}
-								color="secondary"
+								color="warning"
 								variant="outlined"
 								sx={{
 									mx: "5px", 

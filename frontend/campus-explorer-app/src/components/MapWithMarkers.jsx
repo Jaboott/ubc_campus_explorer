@@ -36,7 +36,7 @@ const PoiMarkers = ({ pois }) => {
 		<>
 			{pois.map((poi, index) => (
 				<AdvancedMarker key={index} position={poi.location} onClick={() => handleMarkerClick(poi)}>
-					<Pin background={"#FBBC04"} glyphColor={"#000"} borderColor={"#000"} />
+					<Pin background={"#0C58B4"} glyphColor={"#FFFFFF"} borderColor={"#FFFFFF"} />
 				</AdvancedMarker>
 			))}
 
