@@ -6,13 +6,14 @@
 }
 
 .activePage a {
-  background-color: #0C58B4;
-  border-radius: 8px;
-  color: white;
+  /* background-color: #0C58B4; */
+  color: #0C58B4;
+  /* border-radius: 8px; */
+  /* color: white; */
 }
 
 .activePage a:hover {
-  color: white; /* Keep the color the same on hover */
+  color: #0C58B4; /* Keep the color the same on hover */
 }
 
 /* .logo {

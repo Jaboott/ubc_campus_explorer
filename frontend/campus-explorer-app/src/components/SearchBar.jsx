@@ -46,7 +46,7 @@ function SearchBar({ setResults }) {
 					borderRadius: "8px",
 				}}
 			>
-				<InputBase sx={{ ml: 1, flex: 1 }} placeholder="Search" onKeyDown={handleKeyDown} />
+				<InputBase sx={{ ml: 1, flex: 1 }} placeholder="Find a building..." onKeyDown={handleKeyDown} />
 				<IconButton type="button" sx={{ p: "10px" }}>
 					<SearchIcon />
 				</IconButton>

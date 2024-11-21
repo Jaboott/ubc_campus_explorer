@@ -21,7 +21,7 @@ function Home() {
 	}, []);
 
 	return (
-		<div className="d-flex flex-column gap-2">
+		<div className="pt-4 d-flex flex-column gap-2">
 			<SearchBar setResults={setbuildings} />
 			{buildings.length === 0 && (
 				<div style={{ textAlign: "center", color: "red" }}>No buildings found. Please try again.</div>
