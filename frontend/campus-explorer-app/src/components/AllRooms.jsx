@@ -7,12 +7,14 @@ import { Chip } from "@mui/material";
 const AllRooms = ({ selectedRooms, setSelectedRooms }) => {
 	const [rooms, setRooms] = useState([]);
 	const [order, setOrder] = useState("");
-	const [filter, setFilter] = useState("");
+	const [filter, setFilter] = useState(""); 
+	const [queryFilter, setQueryFilter] = useState({}); 
 
-	// rearrange the room list when the order changes
+	// rearrange the room list when the order or filter changes
 	useEffect(() => {
-		const allRoomsQuery = getRoomQuery(order, filter);
+		const allRoomsQuery = getRoomQuery(order, queryFilter);
 		console.log(JSON.stringify(allRoomsQuery));
+
 		fetch("http://localhost:4321/query", {
 			method: "POST",
 			headers: {
@@ -42,24 +44,25 @@ const AllRooms = ({ selectedRooms, setSelectedRooms }) => {
 			.catch((err) => {
 				console.log("error:", err.message);
 			});
-	}, [order, filter]);
+	}, [order, queryFilter]);
 
 	useEffect(() => {
 		console.log("FILTER SELECTED: ", filter);
+
 		if (filter === "Min Seats") {
 			const minSeats = prompt("Enter minimum number of seats: ");
 			if (minSeats !== null) {
-				setFilter({GT: {"rooms_seats": Number(minSeats)}})
+				setQueryFilter({GT: {"rooms_seats": Number(minSeats)}})
 				console.log("MIN: ", minSeats);
-			}
-		}
-
-		if (filter === "Max Seats") {
+			} 
+		} else if (filter === "Max Seats") {
 			const maxSeats = prompt("Enter maximum number of seats: ");
 			if (maxSeats !== null) {
-				setFilter({LT: {"rooms_seats": Number(maxSeats),},})
+				setQueryFilter({LT: {"rooms_seats": Number(maxSeats),},})
 				console.log("MAX: ", maxSeats);
 			}
+		} else {
+			setQueryFilter(filter);
 		}
 	}, [filter]);
 
