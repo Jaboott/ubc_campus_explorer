@@ -21,6 +21,34 @@ function Home() {
 		fetchBuildings();
 	}, []);
 
+	const handleOnClick = () => {
+		if (navigator.geolocation) {
+			navigator.geolocation.getCurrentPosition(computerNearestBuilding);
+		}
+	}
+
+	const computerNearestBuilding = (position) => {
+		const lon = position.coords.longitude;
+		const lat = position.coords.latitude;
+
+		let nearestBuilding = null;
+		let shortestDistance = Infinity;
+
+		for (const building of buildings) {
+			const buildingLon = building.location.lng;
+			const buildingLat = building.location.lat;
+			const distance = Math.sqrt(
+				Math.pow(buildingLat - lat, 2) + Math.pow(buildingLon - lon, 2)
+			);
+
+			if (distance < shortestDistance) {
+				shortestDistance = distance;
+				nearestBuilding = building;
+			}
+		}
+		console.log(nearestBuilding);
+	}
+
 	return (
 		<div className="pt-4 d-flex flex-column gap-2">
 			<div className="d-flex flex-row justify-content-between">
@@ -33,6 +61,7 @@ function Home() {
 						border: "none",
 						background: "linear-gradient(180deg, #0c58b4, #97d4e9)",
 					}}
+					onClick = {handleOnClick}
 				>
 					✨ Find Nearest Building
 				</button>
