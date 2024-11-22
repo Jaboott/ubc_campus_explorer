@@ -23,7 +23,7 @@ function Home() {
 
 	return (
 		<div className="pt-4 d-flex flex-column gap-2">
-			<div className="d-flex flex-row justify-content-between">
+			<div className="d-flex flex-row justify-content-between mx-1">
 				<SearchBar setResults={setbuildings} />
 				<button
 					type="button"
