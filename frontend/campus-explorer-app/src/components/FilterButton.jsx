@@ -51,7 +51,8 @@ const FilterButton = ({ filter, setFilter }) => {
 				<MenuItem value={""}>{"Choose Filter"}</MenuItem>
                 {options.map((option) => (
 					<MenuItem key={option} value={option}>
-						{Object.values(option)[0]}
+						{Object.values(option)[0] === "" ? "Unspecified" : Object.values(option)[0]}  {/*<-- addresses blank filter option issue*/}
+						{/* {Object.values(option)[0]} */}
 					</MenuItem>
 				))}
                 <ListSubheader>Seating Capacity</ListSubheader>

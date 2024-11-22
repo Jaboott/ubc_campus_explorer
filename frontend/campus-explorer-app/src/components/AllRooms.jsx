@@ -103,7 +103,7 @@ const AllRooms = ({ selectedRooms, setSelectedRooms }) => {
 								<strong>Seats:</strong> {room.seats}
 							</p>
 							<Chip
-								label={room.type}
+								label={room.type === "" ? "Unspecified" : room.type}
 								color="primary"
 								variant="outlined"
 								sx={{
