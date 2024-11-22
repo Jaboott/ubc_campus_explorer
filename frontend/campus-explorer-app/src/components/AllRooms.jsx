@@ -54,12 +54,16 @@ const AllRooms = ({ selectedRooms, setSelectedRooms }) => {
 			if (minSeats !== null) {
 				setQueryFilter({GT: {"rooms_seats": Number(minSeats)}})
 				console.log("MIN: ", minSeats);
-			} 
+			} else {
+				setFilter("");
+			}
 		} else if (filter === "Max Seats") {
 			const maxSeats = prompt("Enter maximum number of seats: ");
 			if (maxSeats !== null) {
 				setQueryFilter({LT: {"rooms_seats": Number(maxSeats),},})
 				console.log("MAX: ", maxSeats);
+			} else {
+				setFilter("");
 			}
 		} else {
 			setQueryFilter(filter);
