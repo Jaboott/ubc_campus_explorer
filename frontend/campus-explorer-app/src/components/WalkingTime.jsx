@@ -88,7 +88,8 @@ const WalkingTime = ({ selectedRooms }) => {
 						<div className="my-2">
 							<div className="d-flex justify-content-between">
 								<div>From <strong>{result.from}</strong> to <strong>{result.to}</strong></div> 
-                {result.distance === "1 m" ? <div>same building, ~1-2min</div> : <div>{result.distance}, {result.duration}</div>}
+                {/* {result.distance === "1 m" ? <div>same building, ~1-2min</div> : <div>{result.distance}, {result.duration}</div>} */}
+				{result.distance === "1 m" ? <div>same building, ~1-2min 🚶</div> : <div>{result.distance}, {result.duration}{result.seconds < 600 ? " 🚶" : " 🏃💨"}</div>}
 							</div>
 						</div>
 					))}
