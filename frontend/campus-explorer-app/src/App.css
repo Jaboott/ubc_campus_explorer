@@ -1,19 +1,25 @@
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  /* text-align: center; */
+	max-width: 1280px;
+	margin: 0 auto;
+	padding: 2rem;
+	/* text-align: center; */
 }
 
 .activePage a {
-  /* background-color: #0C58B4; */
-  color: #0C58B4;
-  /* border-radius: 8px; */
-  /* color: white; */
+	/* background-color: #0C58B4; */
+	color: #0c58b4;
+	/* border-radius: 8px; */
+	/* color: white; */
 }
 
 .activePage a:hover {
-  color: #0C58B4; /* Keep the color the same on hover */
+	color: #0c58b4; /* Keep the color the same on hover */
+}
+
+.tip {
+  margin-top: 15px;
+	border-left: 4px solid #0a58ca;
+	background-color: #dbf5ff;
 }
 
 /* .logo {

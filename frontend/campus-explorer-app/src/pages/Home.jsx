@@ -7,6 +7,8 @@ import HomeInfoBox from "../components/HomeInfoBox";
 
 function Home() {
 	const [buildings, setbuildings] = useState([]);
+	const [nearestBuilding, setNearest] = useState({});
+	const [isLoading, setIsLoading] = useState(false);
 
 	// fetch all buildings once when the page renders
 	useEffect(() => {
@@ -23,6 +25,7 @@ function Home() {
 
 	const handleOnClick = () => {
 		if (navigator.geolocation) {
+			setIsLoading(true);
 			navigator.geolocation.getCurrentPosition(computerNearestBuilding);
 		}
 	}
@@ -47,6 +50,8 @@ function Home() {
 			}
 		}
 		console.log(nearestBuilding);
+		setNearest(nearestBuilding);
+		setIsLoading(false);
 	}
 
 	return (
@@ -71,7 +76,7 @@ function Home() {
 			)}
 			<div className="d-flex">
 				<MapWithMarkers locations={buildings} />
-				<HomeInfoBox/>
+				<HomeInfoBox nearest={nearestBuilding} isLoading={isLoading}/>
 			</div>
 		</div>
 	);
